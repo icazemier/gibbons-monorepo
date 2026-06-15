@@ -1,0 +1,19 @@
+# Code Owners
+# Automatically requested for review when a PR touches matching paths.
+# Last matching pattern wins.
+
+# Default owner for everything
+* @icazemier
+
+# Workspace tooling and CI/CD
+/.github/ @icazemier
+/.husky/ @icazemier
+*.config.* @icazemier
+eslint.config.js @icazemier
+commitlint.config.js @icazemier
+tsconfig*.json @icazemier
+pnpm-workspace.yaml @icazemier
+pnpm-lock.yaml @icazemier
+
+# Packages
+/packages/ @icazemier
