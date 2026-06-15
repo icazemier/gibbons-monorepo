@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [development, 'feature/*']
+  pull_request:
+    branches: [development]
+
+jobs:
+  lint:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+
+  test:
+    name: Test ${{ matrix.package }} on Node ${{ matrix.node-version }}
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [gibbons-mongodb, gibbons-postgresql]
+        node-version: [20.x, 22.x, 24.x, 26.x]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @icazemier/${{ matrix.package }} build
+      - run: pnpm --filter @icazemier/${{ matrix.package }} test
+
+  bun:
+    name: Run ${{ matrix.package }} on Bun
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [gibbons-mongodb, gibbons-postgresql]
+    defaults:
+      run:
+        working-directory: packages/${{ matrix.package }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
+          cache: 'pnpm'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      # pnpm is the single installer (catalog: protocol); Bun is the runtime under test.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+      - name: Build
+        run: bun run build
+      - name: Test
+        run: bun run test
+
+  deno:
+    name: Import check ${{ matrix.package }} on Deno
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [gibbons-mongodb, gibbons-postgresql]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: 'pnpm'
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @icazemier/${{ matrix.package }} build
+      - name: Smoke test
+        working-directory: packages/${{ matrix.package }}
+        run: deno run --allow-env --allow-net --allow-read --allow-sys compat/deno.ts
