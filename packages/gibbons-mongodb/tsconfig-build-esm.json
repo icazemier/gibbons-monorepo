@@ -1,24 +1,16 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "lib": ["ESNext"],
     "target": "ESNext",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "nodenext",
     "outDir": "./build/esm",
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "declaration": true,
-    "declarationMap": false,
-    "sourceMap": false,
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
+    "rootDir": "./src",
     "baseUrl": "./src",
-    "rootDir": "./src"
+    "declarationMap": false,
+    "sourceMap": false
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["src/**/*.spec.ts", "tests/**/*", "node_modules", "build"],
+  "exclude": ["src/**/*.spec.ts", "tests/**/*", "node_modules", "build"]
 }
