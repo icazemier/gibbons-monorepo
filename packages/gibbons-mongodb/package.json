@@ -52,8 +52,6 @@
     "fixup": "node ../../fixup.mjs",
     "clean:build": "rimraf build",
     "clean:docs": "rimraf docs",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
     "release": "semantic-release",
     "release:dry": "semantic-release --dry-run"
   },
@@ -79,16 +77,12 @@
     "yargs": "catalog:"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
     "@types/node": "catalog:",
     "@types/yargs": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "conventional-changelog-conventionalcommits": "catalog:",
     "cross-env": "catalog:",
     "dotenv": "catalog:",
-    "eslint": "catalog:",
-    "eslint-config-prettier": "catalog:",
-    "eslint-plugin-prettier": "catalog:",
     "mongodb": "^6.16.0",
     "mongodb-memory-server": "^10.1.4",
     "noop-stream": "catalog:",
@@ -99,7 +93,6 @@
     "ts-node": "catalog:",
     "typedoc": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
     "vitest": "catalog:"
   }
 }

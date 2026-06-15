@@ -3,12 +3,12 @@ import tsEslint from 'typescript-eslint';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 
 const ignores = [
-  'build/**/*',
-  'node_modules/**/*',
-  'coverage/**/*',
-  'docs/**/*',
-  '.claude/**/*',
-  'compat/**/*',
+  '**/build/**/*',
+  '**/node_modules/**/*',
+  '**/coverage/**/*',
+  '**/docs/**/*',
+  '**/.claude/**/*',
+  '**/compat/**/*',
 ];
 
 const stylisticConfig = {
@@ -36,7 +36,8 @@ const config = tsEslint.config(
     extends: tsEslint.configs.strict,
     languageOptions: {
       parserOptions: {
-        project: 'tsconfig.json',
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
     rules: {

@@ -52,8 +52,6 @@
     "fixup": "node ../../fixup.mjs",
     "clean:build": "rimraf build",
     "clean:docs": "rimraf docs",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
     "release": "semantic-release",
     "release:dry": "semantic-release --dry-run"
   },
@@ -80,7 +78,6 @@
     "yargs": "catalog:"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
     "@types/node": "catalog:",
     "@types/pg": "^8.11.0",
     "@types/pg-cursor": "^2.7.0",
@@ -90,9 +87,6 @@
     "cross-env": "catalog:",
     "dotenv": "catalog:",
     "embedded-postgres": "18.3.0-beta.17",
-    "eslint": "catalog:",
-    "eslint-config-prettier": "catalog:",
-    "eslint-plugin-prettier": "catalog:",
     "noop-stream": "catalog:",
     "npm-run-all2": "catalog:",
     "pg": "^8.11.0",
@@ -102,7 +96,6 @@
     "ts-node": "catalog:",
     "typedoc": "catalog:",
     "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
     "vitest": "catalog:"
   }
 }
