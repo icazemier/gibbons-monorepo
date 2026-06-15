@@ -1,0 +1,17 @@
+node_modules/
+build/
+coverage/
+docs/
+
+.DS_Store
+._*
+.AppleDouble
+.LSOverride
+
+.env
+.env.local
+
+# Claude
+.claude/
+.claude*
+CLAUDE.md
