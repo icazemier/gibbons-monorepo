@@ -225,6 +225,6 @@ MIT
 
 ## Contributing
 
-Issues and PRs welcome at [github.com/icazemier/gibbons-mongodb](https://github.com/icazemier/gibbons-mongodb).
+Issues and PRs welcome at [github.com/icazemier/gibbons-monorepo](https://github.com/icazemier/gibbons-monorepo). This package lives in [`packages/gibbons-mongodb`](https://github.com/icazemier/gibbons-monorepo/tree/main/packages/gibbons-mongodb).
 
 This project uses [conventional commits](https://www.conventionalcommits.org/) with automated semantic versioning. See [SEMANTIC-VERSIONING-QUICKSTART.md](SEMANTIC-VERSIONING-QUICKSTART.md) for details.

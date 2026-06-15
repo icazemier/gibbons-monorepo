@@ -278,7 +278,7 @@ const seeder = new PostgreSqlSeeder(pool, config);
 await seeder.initialize({ skipSchema: true });
 ```
 
-A full runnable example lives in [`examples/prisma/`](https://github.com/icazemier/gibbons-postgresql/tree/main/examples/prisma/).
+A full runnable example lives in [`examples/prisma/`](https://github.com/icazemier/gibbons-monorepo/tree/main/packages/gibbons-postgresql/examples/prisma/).
 
 ### Pattern 2 — Separate Postgres schema
 
@@ -349,6 +349,6 @@ MIT
 
 ## Contributing
 
-Issues and PRs welcome at [github.com/icazemier/gibbons-postgresql](https://github.com/icazemier/gibbons-postgresql).
+Issues and PRs welcome at [github.com/icazemier/gibbons-monorepo](https://github.com/icazemier/gibbons-monorepo). This package lives in [`packages/gibbons-postgresql`](https://github.com/icazemier/gibbons-monorepo/tree/main/packages/gibbons-postgresql).
 
 This project uses [conventional commits](https://www.conventionalcommits.org/) with automated semantic versioning. See [SEMANTIC-VERSIONING-QUICKSTART.md](SEMANTIC-VERSIONING-QUICKSTART.md) for details.
