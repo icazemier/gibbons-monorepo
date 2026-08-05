@@ -74,7 +74,7 @@
   "dependencies": {
     "@icazemier/gibbons": "catalog:",
     "cosmiconfig": "catalog:",
-    "pg-cursor": "^2.10.0",
+    "pg-cursor": "^2.21.0",
     "yargs": "catalog:"
   },
   "devDependencies": {
