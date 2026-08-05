@@ -7,7 +7,7 @@
     "target": "ESNext",
     "outDir": "./build/esm",
     "rootDir": "./src",
-    "baseUrl": "./src",
+    "types": ["node"],
     "declarationMap": false,
     "sourceMap": false
   },
