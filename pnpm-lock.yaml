@@ -31,8 +31,8 @@ catalogs:
       specifier: ^8.0.0
       version: 8.0.0
     cosmiconfig:
-      specifier: ^9.0.0
-      version: 9.0.2
+      specifier: ^10.0.0
+      version: 10.0.0
     cross-env:
       specifier: ^10.1.0
       version: 10.1.0
@@ -142,7 +142,7 @@ importers:
         version: 6.0.9
       cosmiconfig:
         specifier: 'catalog:'
-        version: 9.0.2(typescript@6.0.3)
+        version: 10.0.0
       yargs:
         specifier: 'catalog:'
         version: 17.7.2
@@ -206,7 +206,7 @@ importers:
         version: 6.0.9
       cosmiconfig:
         specifier: 'catalog:'
-        version: 9.0.2(typescript@6.0.3)
+        version: 10.0.0
       pg-cursor:
         specifier: ^2.21.0
         version: 2.21.0(pg@8.21.0)
@@ -1443,6 +1443,10 @@ packages:
       '@types/node': '*'
       cosmiconfig: '>=9'
       typescript: '>=5'
+
+  cosmiconfig@10.0.0:
+    resolution: {integrity: sha512-RYs2EfrIoS16yh6j/MLgF753u5rROFFw3XGjcJXM4UQJm1iGXX7gKNyk4O/bCkyfi9Qfo+fVdd3FrnviZv830g==}
+    engines: {node: ^22.18 || >= 24}
 
   cosmiconfig@9.0.2:
     resolution: {integrity: sha512-gtTZxTDau1wL7Y7zifc2dd8jHSK/k6BTx/2Xp/BpdlAdnlYWFVt7qhJqgwi7637yRwRQ3qL4ZidbB4I8tA5VOg==}
@@ -4467,6 +4471,11 @@ snapshots:
       cosmiconfig: 9.0.2(typescript@6.0.3)
       jiti: 2.6.1
       typescript: 6.0.3
+
+  cosmiconfig@10.0.0:
+    dependencies:
+      env-paths: 2.2.1
+      js-yaml: 4.3.1
 
   cosmiconfig@9.0.2(typescript@6.0.3):
     dependencies:

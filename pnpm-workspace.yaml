@@ -6,7 +6,7 @@ packages:
 catalog:
   # shared runtime
   "@icazemier/gibbons": ^6.0.7
-  cosmiconfig: ^9.0.0
+  cosmiconfig: ^10.0.0
   yargs: ^17.7.2
   # shared dev tooling
   "@commitlint/cli": ^21.2.1
