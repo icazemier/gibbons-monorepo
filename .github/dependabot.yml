@@ -1,0 +1,31 @@
+version: 2
+
+updates:
+  # Single manifest ecosystem: the pnpm workspace is rooted here, so one entry
+  # covers both packages' dependencies and the shared catalog.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    versioning-strategy: increase-if-necessary
+    commit-message:
+      prefix: chore
+      prefix-development: chore
+      include: scope
+    groups:
+      # Tooling churn is noisy and never reaches consumers — land it in one PR.
+      dev-dependencies:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+
+  # Keeps the SHA-pinned `uses:` references current; without this they are
+  # pinned *and* frozen, which trades supply-chain risk for stale actions.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
