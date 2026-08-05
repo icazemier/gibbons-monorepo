@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { cosmiconfig } from 'cosmiconfig';
-import { CosmiconfigResult } from 'cosmiconfig/dist/types.js';
+import type { CosmiconfigResult } from 'cosmiconfig';
 import { Config } from './interfaces/config.js';
 
 export class ConfigLoader {
@@ -32,9 +32,9 @@ export class ConfigLoader {
       throw new Error('Invalid filepath: null bytes are not allowed');
     }
 
-    const configResult = (
-      resolved ? await explorer.load(resolved) : await explorer.search()
-    ) as CosmiconfigResult;
+    const configResult: CosmiconfigResult = resolved
+      ? await explorer.load(resolved)
+      : await explorer.search();
 
     if (!configResult?.config) {
       throw new Error(

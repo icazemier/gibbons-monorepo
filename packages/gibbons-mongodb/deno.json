@@ -3,11 +3,27 @@
   "version": "0.0.0",
   "license": "MIT",
   "exports": "./src/index.ts",
-  "exclude": ["node_modules/", "build/", "docs/"],
+  "exclude": [
+    "node_modules/",
+    "build/",
+    "docs/",
+    "test/",
+    "compat/",
+    "guides/",
+    ".vscode/",
+    "**/*.spec.ts",
+    "tsconfig.json",
+    "tsconfig-build-cjs.json",
+    "tsconfig-build-esm.json",
+    "typedoc.json",
+    "vite.config.ts",
+    ".releaserc.json",
+    "SEMANTIC-VERSIONING-QUICKSTART.md"
+  ],
   "imports": {
     "mongodb": "npm:mongodb@^6.0.0",
     "@icazemier/gibbons": "npm:@icazemier/gibbons@^6.0.7",
-    "cosmiconfig": "npm:cosmiconfig@^9.0.0",
+    "cosmiconfig": "npm:cosmiconfig@^10.0.0",
     "yargs": "npm:yargs@^17.7.2",
     "yargs/helpers": "npm:yargs@^17.7.2/helpers"
   }
