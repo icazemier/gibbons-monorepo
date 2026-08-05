@@ -1017,7 +1017,8 @@ export class GibbonsMongoDb implements IPermissionsResource {
       await seeder.seedRange(
         'permission',
         oldByteLength * 8 + 1,
-        newByteLength * 8
+        newByteLength * 8,
+        s
       );
 
       // 2. Resize permissionsGibbon in every group doc
@@ -1062,7 +1063,12 @@ export class GibbonsMongoDb implements IPermissionsResource {
     await this.executeInSession(session, async (s) => {
       // 1. Seed new group slots (with empty permissionsGibbon at current perm byte length)
       const seeder = new MongoDbSeeder(this.mongoClient, this.config);
-      await seeder.seedRange('group', oldByteLength * 8 + 1, newByteLength * 8);
+      await seeder.seedRange(
+        'group',
+        oldByteLength * 8 + 1,
+        newByteLength * 8,
+        s
+      );
 
       // 2. Resize groupsGibbon in every user doc
       await this.gibbonUser.resizeGroups(newByteLength, s);
