@@ -36,9 +36,9 @@ export class ConfigLoader {
       }
     }
 
-    const configResult = (
-      filepath ? await explorer.load(filepath) : await explorer.search()
-    ) as CosmiconfigResult;
+    const configResult: CosmiconfigResult = filepath
+      ? await explorer.load(filepath)
+      : await explorer.search();
 
     if (!configResult?.config) {
       throw new Error(
