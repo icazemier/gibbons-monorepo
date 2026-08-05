@@ -8,7 +8,7 @@ Manage user groups and permissions in [MongoDB](https://www.mongodb.com/) using 
 
 | Runtime | Support | Install |
 |---------|---------|---------|
-| Node.js 20+ | ✅ Native | `npm install @icazemier/gibbons-mongodb mongodb` |
+| Node.js 22+ | ✅ Native | `npm install @icazemier/gibbons-mongodb mongodb` |
 | Bun | ✅ Native | `bun add @icazemier/gibbons-mongodb mongodb` |
 | Deno | ✅ via `npm:` | See below |
 

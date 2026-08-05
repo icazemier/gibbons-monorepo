@@ -29,9 +29,9 @@ Go to your GitHub repository:
 - ✅ Enable this
 - ✅ Require branches to be up to date before merging
 - Search and add these required checks:
-  - `test (20.x)` - Tests on Node 20
-  - `test (22.x)` - Tests on Node 22
-  - `test (24.x)` - Tests on Node 24
+  - `test (22.x)` - Tests on Node 22 (Maintenance LTS)
+  - `test (24.x)` - Tests on Node 24 (Active LTS)
+  - `test (26.x)` - Tests on Node 26 (Current)
 
 **3. Require conversation resolution before merging**
 - ✅ Enable this (ensures all review comments are addressed)
