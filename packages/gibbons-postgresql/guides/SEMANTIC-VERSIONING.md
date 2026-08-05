@@ -175,12 +175,28 @@ external systems.
 Closes #42
 ```
 
-## GitHub Secrets Required
+## Publishing Credentials
 
-For CI/CD to work, ensure these secrets are set in GitHub repo settings:
+Publishing uses npm **trusted publishing** (OIDC) — there is deliberately no
+long-lived npm token anywhere in this repo, and none should be added.
 
-- `NPM_TOKEN` - npm authentication token for publishing
-- `GITHUB_TOKEN` - Automatically provided by GitHub Actions
+- `GITHUB_TOKEN` — automatically provided by GitHub Actions
+- npm authentication — short-lived OIDC token minted per run from the release
+  job's `id-token: write` permission
+
+Each package needs a trusted publisher configured on npmjs.com (*Settings →
+Trusted Publisher*) pointing at:
+
+| Field | Value |
+| --- | --- |
+| Publisher | GitHub Actions |
+| Organization or user | `icazemier` |
+| Repository | `gibbons-monorepo` |
+| Workflow | `release.yml` |
+| Environment | *(empty)* |
+
+The repository and workflow must match exactly, and the environment field must
+stay empty because the release job declares no `environment:`.
 
 ## Troubleshooting
 
@@ -193,5 +209,10 @@ For CI/CD to work, ensure these secrets are set in GitHub repo settings:
 
 **"Release failed"**
 - Check GitHub Actions logs
-- Verify NPM_TOKEN is valid
 - Ensure tests pass locally first
+
+**"OIDC token exchange failed: 404 ... package not found"**
+- The npm trusted publisher does not match this repo/workflow. Check the table
+  above — after a repo move or rename the pointer must be updated on npmjs.com.
+- Do **not** work around this by adding an `NPM_TOKEN` secret; a long-lived
+  publish token is exactly what trusted publishing exists to remove.
