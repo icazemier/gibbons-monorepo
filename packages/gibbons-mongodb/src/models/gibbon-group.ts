@@ -20,12 +20,37 @@ export class GibbonGroup extends GibbonModel {
   protected dbCollection!: Collection<IGibbonGroup>;
 
   /**
+   * Byte length of the *permission* bitmaps this model reads and writes on group
+   * documents. Distinct from the inherited `byteLength`, which sizes *group*
+   * bitmaps: a group document is addressed by group position but carries a
+   * permission mask, so the two dimensions resize independently via
+   * `expandGroups`/`expandPermissions`.
+   */
+  protected permissionByteLength: number;
+
+  /**
    * @param mongoClient - Connected MongoDB client instance
-   * @param config - Configuration containing group byte length
+   * @param config - Configuration containing group and permission byte lengths
    */
   constructor(mongoClient: MongoClient, config: Config) {
-    const { groupByteLength } = config;
+    const { groupByteLength, permissionByteLength } = config;
     super(mongoClient, groupByteLength);
+    this.permissionByteLength = permissionByteLength;
+  }
+
+  /**
+   * Keeps the permission-bitmap size in sync after `expandPermissions` /
+   * `shrinkPermissions`. Without this the group model would keep minting
+   * permission masks at the old width and every merge against a resized mask
+   * would throw `Incoming Gibbon is too big`.
+   *
+   * @param newByteLength - The new permission byte length (positive integer)
+   */
+  public setPermissionByteLength(newByteLength: number): void {
+    if (!Number.isInteger(newByteLength) || newByteLength < 1) {
+      throw new RangeError('permissionByteLength must be a positive integer');
+    }
+    this.permissionByteLength = newByteLength;
   }
 
   /** {@inheritDoc GibbonModel.initialize} */
@@ -78,6 +103,12 @@ export class GibbonGroup extends GibbonModel {
     session?: ClientSession
   ): Promise<boolean> {
     const groupPositions = this.ensureGibbon(groups).getPositionsArray();
+    // `countDocuments({ $in: [] })` is 0, which would equal an empty
+    // `groupPositions.length` and report "all allocated" for nothing at all.
+    // Fail closed, matching the PostgreSQL adapter.
+    if (groupPositions.length === 0) {
+      return false;
+    }
 
     const filter = {
       gibbonGroupPosition: {
@@ -119,7 +150,7 @@ export class GibbonGroup extends GibbonModel {
     const groupCursor = this.dbCollection.find(filter, { projection, session });
 
     // Create fresh permissions space as we're rebuilding permissions scratch
-    const permissionGibbon = Gibbon.create(this.byteLength);
+    const permissionGibbon = Gibbon.create(this.permissionByteLength);
     // Iterate through all these specific groups and collect permissions
     for await (const group of groupCursor) {
       const buffer = Buffer.from((group.permissionsGibbon as Binary).buffer);
@@ -207,7 +238,7 @@ export class GibbonGroup extends GibbonModel {
     const $set = {
       ...sanitized,
       gibbonIsAllocated: true,
-      permissionsGibbon: Gibbon.create(this.byteLength).toBuffer(),
+      permissionsGibbon: Gibbon.create(this.permissionByteLength).toBuffer(),
     } as UpdateFilter<IGibbonGroup>;
 
     const group = await this.dbCollection.findOneAndUpdate(
@@ -315,7 +346,9 @@ export class GibbonGroup extends GibbonModel {
           // Reset to default values
           gibbonGroupPosition,
           // New Gibbon, no permissions set
-          permissionsGibbon: Gibbon.create(this.byteLength).toBuffer(),
+          permissionsGibbon: Gibbon.create(
+            this.permissionByteLength
+          ).toBuffer(),
           // Set to be available for allocations again
           gibbonIsAllocated: false,
         },

@@ -1,4 +1,25 @@
 import type { Pool, PoolClient } from 'pg';
+import type { Gibbon } from '@icazemier/gibbons';
+
+/**
+ * Authorization predicate for "actual holds every required bit".
+ *
+ * Plain bitmask containment is *vacuously true* against an empty requirement
+ * set — `(byte & 0) === 0` holds for every byte — so `hasAllFromGibbon` returns
+ * `true` for a user with no permissions at all whenever the required set is
+ * empty. A caller that derives its requirement dynamically (`routePermissions
+ * [path] ?? []`, an empty parse result) would get an open gate from a lookup
+ * miss. Authorization fails closed here: nothing required means nothing proven.
+ *
+ * @param actual - Bits the subject actually holds
+ * @param required - Bits the subject must hold; empty is never satisfied
+ */
+export function hasAllRequired(actual: Gibbon, required: Gibbon): boolean {
+  if (required.getPositionsArray().length === 0) {
+    return false;
+  }
+  return actual.hasAllFromGibbon(required);
+}
 
 /**
  * Runs a callback inside a PostgreSQL transaction.

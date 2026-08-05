@@ -57,6 +57,34 @@ export function splitIdent(identifier: string): {
 export interface BuiltClause {
   sql: string;
   params: unknown[];
+  /**
+   * Whether the clause actually narrows the result set. `false` means the filter
+   * compiled to `TRUE` and the statement would touch every row — see
+   * {@link assertSelective}.
+   */
+  selective: boolean;
+}
+
+/**
+ * Guard for statements that must never run unbounded.
+ *
+ * A filter can carry keys and still compile to `TRUE` (`{ metadata: {} }`
+ * contributes no conditions), so presence of a property is not evidence that
+ * the query is bounded. Only the compiled clause knows.
+ *
+ * @throws Error when the clause would match every row.
+ */
+export function assertSelective(
+  where: BuiltClause,
+  operation: string
+): BuiltClause {
+  if (!where.selective) {
+    throw new Error(
+      `${operation} requires a filter that actually narrows the result set. ` +
+        `The supplied filter compiled to an unbounded match and would affect every user.`
+    );
+  }
+  return where;
 }
 
 /**
@@ -102,6 +130,7 @@ export function buildUserWhere(
   return {
     sql: conditions.length === 0 ? 'TRUE' : conditions.join(' AND '),
     params,
+    selective: conditions.length > 0,
   };
 }
 
