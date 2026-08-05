@@ -25,12 +25,58 @@ function rowToGroup(row: GroupRow): IGibbonGroup {
 }
 
 /**
+ * Row-lock suffix for the read-modify-write scans below.
+ *
+ * Those paths decode a permission bitmap, mutate it in JS and write the whole
+ * buffer back. Under the default READ COMMITTED isolation a concurrent
+ * transaction can commit between our SELECT and UPDATE, and our stale buffer
+ * then overwrites its result — silently resurrecting a permission bit that was
+ * just deallocated. Since `allocate` re-issues the lowest free slot, that bit
+ * later comes back as a *different* permission. `FOR UPDATE` serialises the
+ * transactions; the `ORDER BY` gives every caller the same lock-acquisition
+ * order so they queue instead of deadlocking.
+ *
+ * Emitted only when the scan shares a transactional client with the writes —
+ * without one the cursor runs on a separate pooled connection and would block
+ * waiting for a lock it holds itself.
+ */
+function rowLockSuffix(client?: PoolClient): string {
+  return client
+    ? '\n              ORDER BY gibbon_group_position FOR UPDATE'
+    : '';
+}
+
+/**
  * Model for managing group rows in PostgreSQL.
  * Groups are pre-populated slots that can be allocated and assigned permissions.
  */
 export class GibbonGroup extends GibbonModel {
+  /**
+   * Byte length of the *permission* bitmaps this model reads and writes on group
+   * rows. Distinct from the inherited `byteLength`, which sizes *group* bitmaps:
+   * a group row is addressed by group position but carries a permission mask, so
+   * the two dimensions resize independently via `expandGroups`/`expandPermissions`.
+   */
+  protected permissionByteLength: number;
+
   constructor(pool: Pool, config: Config) {
     super(pool, config.groupByteLength);
+    this.permissionByteLength = config.permissionByteLength;
+  }
+
+  /**
+   * Keeps the permission-bitmap size in sync after `expandPermissions` /
+   * `shrinkPermissions`. Without this the group model would keep minting
+   * permission masks at the old width and every merge against a resized mask
+   * would throw.
+   *
+   * @param newByteLength - The new permission byte length (positive integer)
+   */
+  public setPermissionByteLength(newByteLength: number): void {
+    if (!Number.isInteger(newByteLength) || newByteLength < 1) {
+      throw new RangeError('permissionByteLength must be a positive integer');
+    }
+    this.permissionByteLength = newByteLength;
   }
 
   async initialize(_dbName: string, tableName: string): Promise<void> {
@@ -78,7 +124,7 @@ export class GibbonGroup extends GibbonModel {
     client?: PoolClient
   ): Promise<Gibbon> {
     const positions = this.ensureGibbon(groups).getPositionsArray();
-    const aggregate = Gibbon.create(this.byteLength);
+    const aggregate = Gibbon.create(this.permissionByteLength);
     if (positions.length === 0) {
       return aggregate;
     }
@@ -158,7 +204,7 @@ export class GibbonGroup extends GibbonModel {
     client?: PoolClient
   ): Promise<IGibbonGroup> {
     const sanitized = GibbonGroup.sanitizeData(data);
-    const emptyPerms = Gibbon.create(this.byteLength).toBuffer();
+    const emptyPerms = Gibbon.create(this.permissionByteLength).toBuffer();
     const result = await this.runner(client).query<GroupRow>(
       `UPDATE ${this.tableName}
        SET gibbon_is_allocated = TRUE,
@@ -208,7 +254,7 @@ export class GibbonGroup extends GibbonModel {
       this.cursorSource(client),
       {
         sql: `SELECT gibbon_group_position, permissions_gibbon FROM ${this.tableName}
-              WHERE ${BYTEA_ANY_BIT_FN}(permissions_gibbon, $1) = TRUE`,
+              WHERE ${BYTEA_ANY_BIT_FN}(permissions_gibbon, $1) = TRUE${rowLockSuffix(client)}`,
         params: [mask],
       },
       (row) =>
@@ -241,7 +287,7 @@ export class GibbonGroup extends GibbonModel {
     if (positions.length === 0) {
       return;
     }
-    const emptyPerms = Gibbon.create(this.byteLength).toBuffer();
+    const emptyPerms = Gibbon.create(this.permissionByteLength).toBuffer();
     await this.runner(client).query(
       `UPDATE ${this.tableName}
        SET gibbon_is_allocated = FALSE,
@@ -278,7 +324,7 @@ export class GibbonGroup extends GibbonModel {
       this.cursorSource(client),
       {
         sql: `SELECT gibbon_group_position, permissions_gibbon FROM ${this.tableName}
-              WHERE gibbon_group_position = ANY($1::int[])`,
+              WHERE gibbon_group_position = ANY($1::int[])${rowLockSuffix(client)}`,
         params: [positions],
       },
       (row) =>
@@ -406,7 +452,7 @@ export class GibbonGroup extends GibbonModel {
       this.cursorSource(client),
       {
         sql: `SELECT gibbon_group_position, permissions_gibbon FROM ${this.tableName}
-              WHERE gibbon_group_position = ANY($1::int[])`,
+              WHERE gibbon_group_position = ANY($1::int[])${rowLockSuffix(client)}`,
         params: [positions],
       },
       (row) =>

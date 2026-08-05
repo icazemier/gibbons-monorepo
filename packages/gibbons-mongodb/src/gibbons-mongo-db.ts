@@ -14,7 +14,7 @@ import { IGibbonGroup } from './interfaces/gibbon-group.js';
 import { IGibbonUser } from './interfaces/gibbon-user.js';
 import { Config } from './interfaces/config.js';
 import { IGibbonPermission } from './interfaces/gibbon-permission.js';
-import { withTransaction } from './utils.js';
+import { withTransaction, hasAllRequired, assertSelective } from './utils.js';
 import { MongoDbSeeder } from './seeder.js';
 
 /**
@@ -462,7 +462,7 @@ export class GibbonsMongoDb implements IPermissionsResource {
   ): boolean {
     const userGroupsGibbon = this.gibbonGroup.ensureGibbon(userGroups);
     const groupsGibbon = this.gibbonGroup.ensureGibbon(groups);
-    return userGroupsGibbon.hasAllFromGibbon(groupsGibbon);
+    return hasAllRequired(userGroupsGibbon, groupsGibbon);
   }
 
   /**
@@ -513,7 +513,7 @@ export class GibbonsMongoDb implements IPermissionsResource {
     const userPermissionsGibbon =
       this.gibbonPermission.ensureGibbon(userPermissions);
     const permissionsGibbon = this.gibbonPermission.ensureGibbon(permissions);
-    return userPermissionsGibbon.hasAllFromGibbon(permissionsGibbon);
+    return hasAllRequired(userPermissionsGibbon, permissionsGibbon);
   }
 
   /**
@@ -632,7 +632,7 @@ export class GibbonsMongoDb implements IPermissionsResource {
         await this.gibbonGroup.getPermissionsGibbonForGroups(groupsGibbon, s);
       // Delegate the search for users and subscribe them
       await this.gibbonUser.subscribeToGroupsAndPermissions(
-        filter,
+        assertSelective(filter, 'subscribeUsersToGroups'),
         groupsGibbon,
         permissionsGibbon,
         s
@@ -756,7 +756,10 @@ export class GibbonsMongoDb implements IPermissionsResource {
     filter: Filter<IGibbonUser>,
     session?: ClientSession
   ): Promise<number> {
-    return this.gibbonUser.remove(filter, session);
+    return this.gibbonUser.remove(
+      assertSelective(filter, 'removeUser'),
+      session
+    );
   }
 
   /**
@@ -892,7 +895,11 @@ export class GibbonsMongoDb implements IPermissionsResource {
     data: T,
     session?: ClientSession
   ): Promise<IGibbonUser | null> {
-    return this.gibbonUser.updateMetadata(filter, data, session);
+    return this.gibbonUser.updateMetadata(
+      assertSelective(filter, 'updateUserMetadata'),
+      data,
+      session
+    );
   }
 
   /**
@@ -923,7 +930,7 @@ export class GibbonsMongoDb implements IPermissionsResource {
       const groupsGibbon = this.gibbonGroup.ensureGibbon(groups);
       const permissionsResource = this.sessionAwarePermissionsResource(s);
       await this.gibbonUser.unsubscribeFromGroups(
-        filter,
+        assertSelective(filter, 'unsubscribeUsersFromGroups'),
         groupsGibbon,
         permissionsResource,
         s
@@ -1022,6 +1029,7 @@ export class GibbonsMongoDb implements IPermissionsResource {
       // 4. Update config and model byte lengths
       this.config.permissionByteLength = newByteLength;
       this.gibbonPermission.setByteLength(newByteLength);
+      this.gibbonGroup.setPermissionByteLength(newByteLength);
     });
   }
 
@@ -1126,6 +1134,7 @@ export class GibbonsMongoDb implements IPermissionsResource {
       // 5. Update config and model byte lengths
       this.config.permissionByteLength = newByteLength;
       this.gibbonPermission.setByteLength(newByteLength);
+      this.gibbonGroup.setPermissionByteLength(newByteLength);
     });
   }
 

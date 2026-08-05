@@ -154,6 +154,22 @@ describe('Resize: expand and shrink', () => {
       name: 'newPerm',
     } as TestPermission);
     expect(newPerm.gibbonPermissionPosition).toBeGreaterThan(0);
+
+    // Group and permission bitmaps resize independently. The group model used to
+    // size its permission masks from groupByteLength, so after this expand every
+    // grant and revoke threw `Incoming Gibbon is too big` — leaving stale
+    // permissions in place because the revoke could not complete.
+    await expect(
+      adapter.subscribeUsersToGroups({ _id: user._id }, [
+        group.gibbonGroupPosition,
+      ])
+    ).resolves.not.toThrow();
+
+    await expect(
+      adapter.unsubscribeUsersFromGroups({ _id: user._id }, [
+        group.gibbonGroupPosition,
+      ])
+    ).resolves.not.toThrow();
   });
 
   it('expandPermissions — throws when newByteLength <= current', async () => {

@@ -137,6 +137,12 @@ export class GibbonPermission extends GibbonModel {
   ): Promise<boolean> {
     const permissionPositions =
       this.ensureGibbon(permissions).getPositionsArray();
+    // `countDocuments({ $in: [] })` is 0, which would equal an empty
+    // `permissionPositions.length` and report "all allocated" for nothing at
+    // all. Fail closed, matching the PostgreSQL adapter.
+    if (permissionPositions.length === 0) {
+      return false;
+    }
 
     const filter = {
       gibbonPermissionPosition: {

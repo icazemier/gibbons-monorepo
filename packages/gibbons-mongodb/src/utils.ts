@@ -1,4 +1,47 @@
-import { ClientSession, MongoClient } from 'mongodb';
+import { ClientSession, MongoClient, Filter, Document } from 'mongodb';
+import type { Gibbon } from '@icazemier/gibbons';
+
+/**
+ * Authorization predicate for "actual holds every required bit".
+ *
+ * Plain bitmask containment is *vacuously true* against an empty requirement
+ * set — `(byte & 0) === 0` holds for every byte — so `hasAllFromGibbon` returns
+ * `true` for a user with no permissions at all whenever the required set is
+ * empty. A caller that derives its requirement dynamically (`routePermissions
+ * [path] ?? []`, an empty parse result) would get an open gate from a lookup
+ * miss. Authorization fails closed here: nothing required means nothing proven.
+ *
+ * @param actual - Bits the subject actually holds
+ * @param required - Bits the subject must hold; empty is never satisfied
+ */
+export function hasAllRequired(actual: Gibbon, required: Gibbon): boolean {
+  if (required.getPositionsArray().length === 0) {
+    return false;
+  }
+  return actual.hasAllFromGibbon(required);
+}
+
+/**
+ * Guard for statements that must never run unbounded.
+ *
+ * An empty MongoDB filter matches every document, so `deleteMany({})` or
+ * `updateMany({}, …)` would silently touch the whole collection. Mutating
+ * helpers route their caller-supplied filter through this first.
+ *
+ * @throws Error when the filter would match every document.
+ */
+export function assertSelective<T extends Document>(
+  filter: Filter<T>,
+  operation: string
+): Filter<T> {
+  if (Object.keys(filter).length === 0) {
+    throw new Error(
+      `${operation} requires a filter that actually narrows the result set. ` +
+        `An empty filter would affect every user.`
+    );
+  }
+  return filter;
+}
 
 /**
  * Runs a callback inside a MongoDB transaction using the convenient API.
