@@ -16,7 +16,7 @@ npm install @icazemier/gibbons-postgresql pg
 
 | Runtime | Support | Install |
 |---------|---------|---------|
-| Node.js 20+ | ✅ Native | `npm install @icazemier/gibbons-postgresql pg` |
+| Node.js 22+ | ✅ Native | `npm install @icazemier/gibbons-postgresql pg` |
 | Bun | ✅ Native | `bun add @icazemier/gibbons-postgresql pg` |
 | Deno | ✅ via `npm:` | See below |
 
