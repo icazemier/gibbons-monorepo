@@ -1,8 +1,11 @@
 {
   "extends": "./tsconfig-build-esm.json",
   "compilerOptions": {
+    // Emits the CommonJS half of the dual build. "bundler" resolution is
+    // what lets "module" stay CommonJS: Node16/NodeNext would emit ESM,
+    // because both packages are "type": "module".
     "module": "CommonJS",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "outDir": "./build/cjs",
     "target": "ES2017"
   }
