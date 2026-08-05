@@ -83,7 +83,7 @@
     "conventional-changelog-conventionalcommits": "catalog:",
     "cross-env": "catalog:",
     "dotenv": "catalog:",
-    "mongodb": "^6.16.0",
+    "mongodb": "^7.5.0",
     "mongodb-memory-server": "^10.1.4",
     "noop-stream": "catalog:",
     "npm-run-all2": "catalog:",
