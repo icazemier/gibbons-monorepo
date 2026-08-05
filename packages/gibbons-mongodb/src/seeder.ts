@@ -84,8 +84,11 @@ export class MongoDbSeeder {
 
     for (let seq = 1; seq <= total; seq++) {
       batch.push({
+        // A group slot is addressed by group position but carries a *permission*
+        // mask, so it is sized by permissionByteLength — matching the expand
+        // path in `seedRange` and the PostgreSQL seeder.
         permissionsGibbon: Gibbon.create(
-          this.config.groupByteLength
+          this.config.permissionByteLength
         ).toBuffer(),
         gibbonGroupPosition: seq,
         gibbonIsAllocated: false,

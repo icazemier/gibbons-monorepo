@@ -9,9 +9,9 @@ import { IGibbonUser } from './interfaces/gibbon-user.js';
 import { Config } from './interfaces/config.js';
 import { IGibbonPermission } from './interfaces/gibbon-permission.js';
 import { UserFilter } from './interfaces/user-filter.js';
-import { withTransaction } from './utils.js';
+import { withTransaction, hasAllRequired } from './utils.js';
 import { PostgreSqlSeeder } from './seeder.js';
-import { quoteIdent, buildUserWhere } from './sql.js';
+import { quoteIdent, buildUserWhere, assertSelective } from './sql.js';
 import { queryRows } from './queryable.js';
 import { PgCursor } from './cursor.js';
 
@@ -361,6 +361,8 @@ export class GibbonsPostgreSql implements IPermissionsResource {
 
   /**
    * Given a set of user groups, validate they have ALL given groups set.
+   *
+   * An empty `groups` set is never satisfied — see {@link hasAllRequired}.
    */
   public validateUserGroupsForAllGroups(
     userGroups: GibbonLike,
@@ -368,7 +370,7 @@ export class GibbonsPostgreSql implements IPermissionsResource {
   ): boolean {
     const userGroupsGibbon = this.gibbonGroup.ensureGibbon(userGroups);
     const groupsGibbon = this.gibbonGroup.ensureGibbon(groups);
-    return userGroupsGibbon.hasAllFromGibbon(groupsGibbon);
+    return hasAllRequired(userGroupsGibbon, groupsGibbon);
   }
 
   /**
@@ -385,6 +387,8 @@ export class GibbonsPostgreSql implements IPermissionsResource {
 
   /**
    * Given a set of user permissions, validate they have ALL of given permissions set.
+   *
+   * An empty `permissions` set is never satisfied — see {@link hasAllRequired}.
    */
   public validateUserPermissionsForAllPermissions(
     userPermissions: GibbonLike,
@@ -393,7 +397,7 @@ export class GibbonsPostgreSql implements IPermissionsResource {
     const userPermissionsGibbon =
       this.gibbonPermission.ensureGibbon(userPermissions);
     const permissionsGibbon = this.gibbonPermission.ensureGibbon(permissions);
-    return userPermissionsGibbon.hasAllFromGibbon(permissionsGibbon);
+    return hasAllRequired(userPermissionsGibbon, permissionsGibbon);
   }
 
   /**
@@ -452,7 +456,10 @@ export class GibbonsPostgreSql implements IPermissionsResource {
       }
       const permissionsGibbon =
         await this.gibbonGroup.getPermissionsGibbonForGroups(groupsGibbon, c);
-      const where = buildUserWhere(filter);
+      const where = assertSelective(
+        buildUserWhere(filter),
+        'subscribeUsersToGroups'
+      );
       await this.gibbonUser.subscribeToGroupsAndPermissions(
         where,
         groupsGibbon,
@@ -530,15 +537,10 @@ export class GibbonsPostgreSql implements IPermissionsResource {
    * Remove user(s) matching the given filter.
    *
    * @returns Number of removed users
-   * @throws Error when filter is empty — requires at least `id` or `metadata` to prevent accidental mass deletion
+   * @throws Error when the filter does not narrow the result set — prevents accidental mass deletion
    */
   async removeUser(filter: UserFilter, client?: PoolClient): Promise<number> {
-    if (filter.id === undefined && filter.metadata === undefined) {
-      throw new Error(
-        'removeUser requires at least one filter condition (id or metadata) to prevent accidental mass deletion'
-      );
-    }
-    const where = buildUserWhere(filter);
+    const where = assertSelective(buildUserWhere(filter), 'removeUser');
     return this.gibbonUser.remove(where, client);
   }
 
@@ -600,7 +602,11 @@ export class GibbonsPostgreSql implements IPermissionsResource {
     data: T,
     client?: PoolClient
   ): Promise<IGibbonUser | null> {
-    return this.gibbonUser.updateMetadata(buildUserWhere(filter), data, client);
+    return this.gibbonUser.updateMetadata(
+      assertSelective(buildUserWhere(filter), 'updateUserMetadata'),
+      data,
+      client
+    );
   }
 
   /**
@@ -618,7 +624,7 @@ export class GibbonsPostgreSql implements IPermissionsResource {
       const groupsGibbon = this.gibbonGroup.ensureGibbon(groups);
       const permissionsResource = this.sessionAwarePermissionsResource(c);
       await this.gibbonUser.unsubscribeFromGroups(
-        buildUserWhere(filter),
+        assertSelective(buildUserWhere(filter), 'unsubscribeUsersFromGroups'),
         groupsGibbon,
         permissionsResource,
         c
@@ -689,6 +695,7 @@ export class GibbonsPostgreSql implements IPermissionsResource {
       await this.gibbonUser.resizePermissions(newByteLength, c);
       this.config.permissionByteLength = newByteLength;
       this.gibbonPermission.setByteLength(newByteLength);
+      this.gibbonGroup.setPermissionByteLength(newByteLength);
     });
   }
 
@@ -772,6 +779,7 @@ export class GibbonsPostgreSql implements IPermissionsResource {
       await this.gibbonUser.resizePermissions(newByteLength, c);
       this.config.permissionByteLength = newByteLength;
       this.gibbonPermission.setByteLength(newByteLength);
+      this.gibbonGroup.setPermissionByteLength(newByteLength);
     });
   }
 
