@@ -1,10 +1,23 @@
 name: CI
 
 on:
+  # Every working branch gets CI on push, whatever it is called. Listing
+  # prefixes meant a typo or an unlisted type — `fix/*` among them — silently
+  # got nothing. `main` and `master` are excluded because Release already runs
+  # this matrix there; `development` is not, because the Bun and Deno jobs
+  # below exist only here.
   push:
-    branches: [development, 'feature/*']
+    branches-ignore: [main, master]
   pull_request:
     branches: [development]
+
+# Supersedes in-flight runs when a branch is pushed again. `github.ref` keeps
+# push and pull_request in separate groups on purpose: collapsing them cancels
+# the push run, and its jobs then report as cancelled against the pull request,
+# which reads as a red check even though the pull-request run passed.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 # CI only builds and tests; nothing here needs to write to the repo.
 permissions:
