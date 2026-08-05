@@ -55,8 +55,22 @@ describe('splitIdent', () => {
 });
 
 describe('buildUserWhere', () => {
-  it('returns TRUE for an empty filter', () => {
-    expect(buildUserWhere({})).toEqual({ sql: 'TRUE', params: [] });
+  it('returns a non-selective TRUE for an empty filter', () => {
+    expect(buildUserWhere({})).toEqual({
+      sql: 'TRUE',
+      params: [],
+      selective: false,
+    });
+  });
+
+  it('reports non-selective for filters whose keys contribute no conditions', () => {
+    // `{ metadata: {} }` carries a key but compiles to no conditions — the case
+    // that used to slip past a `filter.metadata !== undefined` guard.
+    expect(buildUserWhere({ metadata: {} })).toEqual({
+      sql: 'TRUE',
+      params: [],
+      selective: false,
+    });
   });
 
   describe('id filter', () => {
@@ -96,10 +110,12 @@ describe('buildUserWhere', () => {
       expect(buildUserWhere({ metadata: { foo: null } })).toEqual({
         sql: `metadata->>'foo' IS NULL`,
         params: [],
+        selective: true,
       });
       expect(buildUserWhere({ metadata: { foo: { eq: null } } })).toEqual({
         sql: `metadata->>'foo' IS NULL`,
         params: [],
+        selective: true,
       });
     });
 
@@ -113,6 +129,7 @@ describe('buildUserWhere', () => {
       expect(buildUserWhere({ metadata: { foo: { ne: null } } })).toEqual({
         sql: `metadata->>'foo' IS NOT NULL`,
         params: [],
+        selective: true,
       });
     });
 
@@ -198,6 +215,7 @@ describe('buildUserWhere', () => {
       ).toEqual({
         sql: `metadata->>'deleted_at' IS NULL`,
         params: [],
+        selective: true,
       });
     });
 
@@ -207,6 +225,7 @@ describe('buildUserWhere', () => {
       ).toEqual({
         sql: `metadata->>'deleted_at' IS NOT NULL`,
         params: [],
+        selective: true,
       });
     });
 

@@ -8,4 +8,5 @@ export { PgCursor } from './cursor.js';
 export type { CursorSource, PgCursorOptions } from './cursor.js';
 export { combineClauses } from './queryable.js';
 export type { Queryable, WhereClause } from './queryable.js';
-export { quoteIdent } from './sql.js';
+export { quoteIdent, assertSelective } from './sql.js';
+export type { BuiltClause } from './sql.js';
