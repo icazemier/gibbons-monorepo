@@ -27,7 +27,7 @@
 
 - [ ] Tests pass (`pnpm test`)
 - [ ] Added new tests for new functionality
-- [ ] Tested on Node 20, 22, 24, 26
+- [ ] Tested on Node 22, 24, 26
 - [ ] Linting passes (`pnpm lint`)
 - [ ] Build succeeds (`pnpm build`)
 
