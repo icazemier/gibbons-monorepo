@@ -13,6 +13,13 @@ updates:
       prefix: chore
       prefix-development: chore
       include: scope
+    ignore:
+      # A mongodb major is not a dependency bump: it widens the published
+      # `peerDependencies` range (breaking for consumers) and changes session
+      # semantics the test suite pins. Tracked as its own piece of work.
+      - dependency-name: mongodb
+        update-types:
+          - version-update:semver-major
     groups:
       # Tooling churn is noisy and never reaches consumers — land it in one PR.
       dev-dependencies:
