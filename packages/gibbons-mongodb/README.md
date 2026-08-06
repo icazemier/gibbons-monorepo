@@ -10,14 +10,30 @@ Manage user groups and permissions in [MongoDB](https://www.mongodb.com/) using 
 |---------|---------|---------|
 | Node.js 22+ | ✅ Native | `npm install @icazemier/gibbons-mongodb mongodb` |
 | Bun | ✅ Native | `bun add @icazemier/gibbons-mongodb mongodb` |
-| Deno | ✅ via `npm:` | See below |
+| Deno | ✅ Native | `deno add jsr:@icazemier/gibbons-mongodb npm:mongodb` |
 
 ### Deno
 
+The package is published to [JSR](https://jsr.io/@icazemier/gibbons-mongodb) as
+well as npm, so Deno can take it from either registry:
+
+```bash
+deno add jsr:@icazemier/gibbons-mongodb npm:mongodb
+```
+
 ```typescript
-import { GibbonsMongoDb, ConfigLoader } from "npm:@icazemier/gibbons-mongodb";
+import { GibbonsMongoDb, ConfigLoader } from "@icazemier/gibbons-mongodb";
+import { MongoClient } from "mongodb";
+```
+
+Without an install step, import by specifier instead:
+
+```typescript
+import { GibbonsMongoDb, ConfigLoader } from "jsr:@icazemier/gibbons-mongodb";
 import { MongoClient } from "npm:mongodb";
 ```
+
+`mongodb` stays a peer dependency on every runtime: you bring the driver.
 
 Run with the required permissions:
 
@@ -28,8 +44,10 @@ deno run --allow-env --allow-net --allow-read --allow-sys your-script.ts
 ## Install
 
 ```bash
-npm install @icazemier/gibbons-mongodb
+npm install @icazemier/gibbons-mongodb mongodb
 ```
+
+`mongodb` is a peer dependency — you install the driver alongside this library.
 
 ## Quick Start
 
@@ -226,5 +244,11 @@ MIT
 ## Contributing
 
 Issues and PRs welcome at [github.com/icazemier/gibbons-monorepo](https://github.com/icazemier/gibbons-monorepo). This package lives in [`packages/gibbons-mongodb`](https://github.com/icazemier/gibbons-monorepo/tree/main/packages/gibbons-mongodb).
+
+Dependency ranges are authored in `package.json` only. This package also
+publishes to JSR, which resolves imports through `deno.json` instead, so that
+import map is regenerated rather than hand-edited: run `pnpm lint:fix` from the
+repo root after changing a range, and commit both files. `pnpm lint` fails when
+they disagree.
 
 This project uses [conventional commits](https://www.conventionalcommits.org/) with automated semantic versioning. See [SEMANTIC-VERSIONING-QUICKSTART.md](SEMANTIC-VERSIONING-QUICKSTART.md) for details.

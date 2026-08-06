@@ -40,6 +40,7 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+      - run: pnpm test:tools
 
   test:
     name: Test ${{ matrix.package }} on Node ${{ matrix.node-version }}
@@ -114,3 +115,20 @@ jobs:
       - name: Smoke test
         working-directory: packages/${{ matrix.package }}
         run: deno run --allow-env --allow-net --allow-read --allow-sys compat/deno.ts
+      # `pnpm lint` is the broad check: it proves deno.json agrees with
+      # package.json in both directions. This asks the tool that actually
+      # publishes whether it agrees, which covers the narrower case of jsr
+      # changing how it reads package.json. jsr cannot resolve pnpm's
+      # `catalog:` protocol and, rather than failing, drops the dependency and
+      # publishes anyway — so a dry run exiting 0 proves nothing by itself and
+      # the warning it prints is the only signal.
+      - name: Every dependency resolves for JSR
+        working-directory: packages/${{ matrix.package }}
+        run: |
+          set -o pipefail
+          log="$RUNNER_TEMP/jsr-dry-run.log"
+          npx --yes jsr@0.14.3 publish --dry-run --allow-dirty 2>&1 | tee "$log"
+          if grep -q 'failed to resolve' "$log"; then
+            echo "::error::jsr could not resolve a package.json dependency, so it would be dropped from the published package. Run 'pnpm lint:fix' and commit deno.json."
+            exit 1
+          fi
