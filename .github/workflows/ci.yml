@@ -8,8 +8,12 @@ on:
   # below exist only here.
   push:
     branches-ignore: [main, master]
+  # Every long-lived base, not just the integration branch. `main` is the
+  # default branch, so GitHub pre-selects it for new pull requests — listing
+  # only `development` here meant a pull request opened against the default
+  # would run no CI at all, the same silent gap the push filter above had.
   pull_request:
-    branches: [development]
+    branches: [main, master, development]
 
 # Supersedes in-flight runs when a branch is pushed again. `github.ref` keeps
 # push and pull_request in separate groups on purpose: collapsing them cancels
