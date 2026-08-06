@@ -5,6 +5,10 @@ updates:
   # covers both packages' dependencies and the shared catalog.
   - package-ecosystem: npm
     directory: /
+    # Dependency work integrates on development and reaches main through a
+    # release promotion. Without this, Dependabot follows the default branch —
+    # now main — and would open bumps straight against the release branch.
+    target-branch: development
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
@@ -32,6 +36,10 @@ updates:
   # pinned *and* frozen, which trades supply-chain risk for stale actions.
   - package-ecosystem: github-actions
     directory: /
+    # Dependency work integrates on development and reaches main through a
+    # release promotion. Without this, Dependabot follows the default branch —
+    # now main — and would open bumps straight against the release branch.
+    target-branch: development
     schedule:
       interval: weekly
     commit-message:
