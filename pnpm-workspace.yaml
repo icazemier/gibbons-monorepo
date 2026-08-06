@@ -5,7 +5,7 @@ packages:
 # Packages reference these via "catalog:". Bump once here.
 catalog:
   # shared runtime
-  "@icazemier/gibbons": ^6.0.7
+  "@icazemier/gibbons": ^6.0.10
   cosmiconfig: ^10.0.0
   yargs: ^17.7.2
   # shared dev tooling

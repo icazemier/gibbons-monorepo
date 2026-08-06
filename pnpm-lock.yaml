@@ -16,8 +16,8 @@ catalogs:
       specifier: ^10.0.0
       version: 10.0.1
     '@icazemier/gibbons':
-      specifier: ^6.0.7
-      version: 6.0.9
+      specifier: ^6.0.10
+      version: 6.0.10
     '@types/node':
       specifier: ^24.13.3
       version: 24.13.3
@@ -87,14 +87,12 @@ catalogs:
 
 overrides:
   minimatch: ^10.2.6
-  lodash: ^4.18.1
   lodash-es: ^4.18.1
   vite: ^7.3.2
   fast-uri: ^3.1.5
   follow-redirects: ^1.16.0
   postcss: ^8.5.23
   picomatch: ^4.0.5
-  ip-address: ^10.4.0
   brace-expansion: ^5.0.9
   js-yaml: ^4.3.0
   shell-quote: ^1.10.0
@@ -142,7 +140,7 @@ importers:
     dependencies:
       '@icazemier/gibbons':
         specifier: 'catalog:'
-        version: 6.0.9
+        version: 6.0.10
       cosmiconfig:
         specifier: 'catalog:'
         version: 10.0.0
@@ -206,7 +204,7 @@ importers:
     dependencies:
       '@icazemier/gibbons':
         specifier: 'catalog:'
-        version: 6.0.9
+        version: 6.0.10
       cosmiconfig:
         specifier: 'catalog:'
         version: 10.0.0
@@ -676,8 +674,8 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@icazemier/gibbons@6.0.9':
-    resolution: {integrity: sha512-JtoPmqpJWECb27g0CA4UGm1zLui4b3Qmsa5gJRIKJ3hoDfL+rKM/aVYSPOG6igy+hM/hf59+GnaGVH5MeE16UA==}
+  '@icazemier/gibbons@6.0.10':
+    resolution: {integrity: sha512-moFzv87x/x78RnOdmcEqzYmMNxs8GY6iS/weGUszVjWT/qSHSTcW7UvwN36NlsFl0uViC9DWGQctz2905dXTZg==}
     engines: {node: '>=20.0.0'}
     os: [darwin, linux, win32]
 
@@ -3703,7 +3701,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@icazemier/gibbons@6.0.9': {}
+  '@icazemier/gibbons@6.0.10': {}
 
   '@jridgewell/resolve-uri@3.1.2': {}
 
