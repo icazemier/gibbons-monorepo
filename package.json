@@ -8,9 +8,11 @@
   },
   "scripts": {
     "build": "pnpm -r run build",
-    "test": "pnpm -r run test",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "test": "pnpm run test:tools && pnpm -r run test",
+    "test:tools": "node --test tools/*.spec.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "pnpm run typecheck && node tools/check-deno-import-map.ts && eslint .",
+    "lint:fix": "node tools/check-deno-import-map.ts --fix && eslint . --fix",
     "release:dry": "pnpm -r run release:dry",
     "prepare": "husky"
   },
@@ -18,6 +20,7 @@
     "@commitlint/cli": "catalog:",
     "@commitlint/config-conventional": "catalog:",
     "@eslint/js": "catalog:",
+    "@types/node": "catalog:",
     "eslint": "catalog:",
     "eslint-config-prettier": "catalog:",
     "eslint-plugin-prettier": "catalog:",

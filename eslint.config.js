@@ -57,6 +57,29 @@ const config = tsEslint.config(
       useUnknownInCatchVariables: 'off',
     },
   },
+  {
+    // Repo tooling is new code with no legacy to accommodate, so it is held to
+    // the type-aware strict tier rather than the syntactic one the packages use.
+    files: ['tools/**/*.ts'],
+    extends: tsEslint.configs.strictTypeChecked,
+  },
+  {
+    // node:test registers a suite synchronously and reports the promise it
+    // returns through the runner, so those calls are the documented exception
+    // the rule provides for — an allowance for one known-safe caller, not the
+    // check being switched off. Everything else in tools/ stays fully checked.
+    files: ['tools/**/*.spec.ts'],
+    rules: {
+      '@typescript-eslint/no-floating-promises': [
+        'error',
+        {
+          allowForKnownSafeCalls: [
+            { from: 'package', package: 'node:test', name: ['describe', 'it'] },
+          ],
+        },
+      ],
+    },
+  },
   eslintPluginPrettierRecommended
 );
 

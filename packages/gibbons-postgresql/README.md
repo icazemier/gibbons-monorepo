@@ -18,14 +18,30 @@ npm install @icazemier/gibbons-postgresql pg
 |---------|---------|---------|
 | Node.js 22+ | ✅ Native | `npm install @icazemier/gibbons-postgresql pg` |
 | Bun | ✅ Native | `bun add @icazemier/gibbons-postgresql pg` |
-| Deno | ✅ via `npm:` | See below |
+| Deno | ✅ Native | `deno add jsr:@icazemier/gibbons-postgresql npm:pg` |
 
 ### Deno
 
+The package is published to [JSR](https://jsr.io/@icazemier/gibbons-postgresql)
+as well as npm, so Deno can take it from either registry:
+
+```bash
+deno add jsr:@icazemier/gibbons-postgresql npm:pg
+```
+
 ```typescript
-import { GibbonsPostgreSql, ConfigLoader } from "npm:@icazemier/gibbons-postgresql";
+import { GibbonsPostgreSql, ConfigLoader } from "@icazemier/gibbons-postgresql";
+import { Pool } from "pg";
+```
+
+Without an install step, import by specifier instead:
+
+```typescript
+import { GibbonsPostgreSql, ConfigLoader } from "jsr:@icazemier/gibbons-postgresql";
 import { Pool } from "npm:pg";
 ```
+
+`pg` stays a peer dependency on every runtime: you bring the driver.
 
 Run with the required permissions:
 
@@ -35,7 +51,7 @@ deno run --allow-env --allow-net --allow-read --allow-sys your-script.ts
 
 ## Requirements
 
-- **Node.js** 20 or newer (Bun and Deno are also supported — see above)
+- **Node.js** 22 or newer (Bun and Deno are also supported — see above)
 - **PostgreSQL** 14 or newer (any community-supported release works)
 
 The adapter only uses portable SQL — `JSONB`, `INSERT ... ON CONFLICT`, `SELECT ... FOR UPDATE SKIP LOCKED`, the `BYTEA` `get_byte`/`octet_length` builtins, and a one-line plpgsql helper function — so technically anything from PostgreSQL 9.5 onward runs it. PostgreSQL 14+ is the recommended floor because earlier releases are out of community support.
@@ -350,5 +366,11 @@ MIT
 ## Contributing
 
 Issues and PRs welcome at [github.com/icazemier/gibbons-monorepo](https://github.com/icazemier/gibbons-monorepo). This package lives in [`packages/gibbons-postgresql`](https://github.com/icazemier/gibbons-monorepo/tree/main/packages/gibbons-postgresql).
+
+Dependency ranges are authored in `package.json` only. This package also
+publishes to JSR, which resolves imports through `deno.json` instead, so that
+import map is regenerated rather than hand-edited: run `pnpm lint:fix` from the
+repo root after changing a range, and commit both files. `pnpm lint` fails when
+they disagree.
 
 This project uses [conventional commits](https://www.conventionalcommits.org/) with automated semantic versioning. See [SEMANTIC-VERSIONING-QUICKSTART.md](SEMANTIC-VERSIONING-QUICKSTART.md) for details.
