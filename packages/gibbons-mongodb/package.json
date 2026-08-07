@@ -72,9 +72,9 @@
     "mongodb": "^6.0.0"
   },
   "dependencies": {
-    "@icazemier/gibbons": "catalog:",
-    "cosmiconfig": "catalog:",
-    "yargs": "catalog:"
+    "@icazemier/gibbons": "^6.0.10",
+    "cosmiconfig": "^10.0.0",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@types/node": "catalog:",
