@@ -1,7 +1,12 @@
 /**
- * Verifies — or with `--fix`, regenerates — every package's `deno.json` import
- * map from its `package.json`. See `deno-import-map.ts` for why the map is
- * load-bearing and why drift in it fails silently at publish time.
+ * Guards what each package declares about its dependencies.
+ *
+ * Two checks, both about drift that only shows up after publishing:
+ *   - no pnpm-only range protocol survives into a published field, which would
+ *     make the package uninstallable (see `publishable-deps.ts`);
+ *   - every package's `deno.json` import map matches its `package.json`, and
+ *     with `--fix` is regenerated from it. See `deno-import-map.ts` for why the
+ *     map is load-bearing and why drift in it fails silently at publish time.
  *
  * Runs on plain Node through type stripping, so `pnpm lint` needs no build
  * step ahead of it.
@@ -21,6 +26,7 @@ import {
   readPackageFiles,
   type PackageFiles,
 } from './package-files.ts';
+import { findUnpublishableRanges } from './publishable-deps.ts';
 
 const repositoryRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const packagesDirectory = join(repositoryRoot, 'packages');
@@ -55,6 +61,29 @@ const run = async (): Promise<void> => {
   const packages = await Promise.all(directories.map(readPackageFiles));
 
   let unresolved = 0;
+  let unpublishable = 0;
+
+  // Checked first and fatal on its own: a workspace protocol is also unusable
+  // input for the import map, which would fail second with a worse message.
+  // Never auto-fixable — only a human knows which literal range was meant.
+  for (const files of packages) {
+    for (const { field, name, range } of findUnpublishableRanges(
+      files.manifest
+    )) {
+      error(
+        `${files.manifest.name}: ${field}."${name}" is "${range}" — a pnpm-only protocol that npm publishes verbatim and consumers cannot resolve. Use a literal range.`
+      );
+      unpublishable += 1;
+    }
+  }
+
+  if (unpublishable > 0) {
+    error(
+      `\n${String(unpublishable)} dependency range(s) cannot be published. Replace each with the literal range it resolves to.`
+    );
+    process.exitCode = 1;
+    return;
+  }
 
   for (const files of packages) {
     const { imports, problems } = resolveImportMap(

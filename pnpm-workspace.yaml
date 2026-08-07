@@ -1,13 +1,18 @@
 packages:
   - "packages/*"
 
-# Single source of truth for shared dependency versions.
+# Single source of truth for shared DEV dependency versions.
 # Packages reference these via "catalog:". Bump once here.
+#
+# Runtime `dependencies` and `peerDependencies` of the published packages must
+# NOT use "catalog:" — they carry literal ranges instead. semantic-release
+# publishes with `npm publish`, and only `pnpm publish`/`pnpm pack` rewrite the
+# catalog protocol, so a catalog entry ships verbatim to the registry and every
+# npm/yarn/bun install of that package dies with EUNSUPPORTEDPROTOCOL. That
+# shipped in 2.0.0 through 3.0.1 before anyone noticed, because a pnpm workspace
+# resolves it fine locally. devDependencies are safe: consumers never resolve
+# them.
 catalog:
-  # shared runtime
-  "@icazemier/gibbons": ^6.0.10
-  cosmiconfig: ^10.0.0
-  yargs: ^17.7.2
   # shared dev tooling
   "@commitlint/cli": ^21.2.1
   "@commitlint/config-conventional": ^21.2.0

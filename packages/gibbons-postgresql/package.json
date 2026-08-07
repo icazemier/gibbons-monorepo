@@ -72,10 +72,10 @@
     "pg": "^8.11.0"
   },
   "dependencies": {
-    "@icazemier/gibbons": "catalog:",
-    "cosmiconfig": "catalog:",
+    "@icazemier/gibbons": "^6.0.10",
+    "cosmiconfig": "^10.0.0",
     "pg-cursor": "^2.21.0",
-    "yargs": "catalog:"
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@types/node": "catalog:",
