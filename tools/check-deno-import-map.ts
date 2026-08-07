@@ -11,7 +11,7 @@
  * Runs on plain Node through type stripping, so `pnpm lint` needs no build
  * step ahead of it.
  */
-import { readdir, writeFile } from 'node:fs/promises';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import process from 'node:process';
@@ -27,6 +27,7 @@ import {
   type PackageFiles,
 } from './package-files.ts';
 import { findUnpublishableRanges } from './publishable-deps.ts';
+import { resolveCatalogRanges } from './catalog-ranges.ts';
 
 const repositoryRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const packagesDirectory = join(repositoryRoot, 'packages');
@@ -45,6 +46,33 @@ const regenerate = async (
 ): Promise<void> => {
   const contents = JSON.stringify({ ...files.config, imports }, undefined, 2);
   await writeFile(files.denoFile, `${contents}\n`, 'utf-8');
+};
+
+/**
+ * Rewrites only the dependency blocks, reading the manifest fresh so every
+ * other field and the key order survive untouched.
+ */
+const rewriteManifestRanges = async (
+  files: PackageFiles,
+  fields: Readonly<Record<string, Readonly<Record<string, string>> | undefined>>
+): Promise<void> => {
+  const parsed: unknown = JSON.parse(
+    await readFile(files.manifestFile, 'utf-8')
+  );
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new Error(`${files.manifestFile} must contain a JSON object`);
+  }
+
+  const updated: Record<string, unknown> = { ...parsed };
+  for (const [field, ranges] of Object.entries(fields)) {
+    if (ranges !== undefined) updated[field] = ranges;
+  }
+
+  await writeFile(
+    files.manifestFile,
+    `${JSON.stringify(updated, undefined, 2)}\n`,
+    'utf-8'
+  );
 };
 
 const report = (denoFile: string, problems: readonly Problem[]): void => {
@@ -85,7 +113,42 @@ const run = async (): Promise<void> => {
     return;
   }
 
+  // The catalog is where a shared version is authored; the literal ranges in
+  // each manifest are generated from it. Runs before the import map, which is
+  // generated from those ranges in turn.
+  let drifted = 0;
   for (const files of packages) {
+    const { fields, drifts } = resolveCatalogRanges(files.manifest, catalog);
+    if (drifts.length === 0) continue;
+
+    if (shouldFix) {
+      await rewriteManifestRanges(files, fields);
+      log(
+        `${relative(repositoryRoot, files.manifestFile)} updated from catalog`
+      );
+      continue;
+    }
+
+    for (const { field, name, declared, expected } of drifts) {
+      error(
+        `${files.manifest.name}: ${field}."${name}" is "${declared}" but the catalog says "${expected}". Run "pnpm lint:fix".`
+      );
+      drifted += 1;
+    }
+  }
+
+  if (drifted > 0) {
+    process.exitCode = 1;
+    return;
+  }
+
+  // Re-read once, because --fix above may have rewritten the manifests the
+  // import map is derived from.
+  const current = shouldFix
+    ? await Promise.all(directories.map(readPackageFiles))
+    : packages;
+
+  for (const files of current) {
     const { imports, problems } = resolveImportMap(
       files.manifest,
       catalog,

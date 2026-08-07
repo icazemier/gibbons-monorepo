@@ -27,6 +27,7 @@ export interface DenoConfig {
 export interface PackageFiles {
   readonly directory: string;
   readonly denoFile: string;
+  readonly manifestFile: string;
   readonly manifest: PackageManifest;
   readonly config: DenoConfig;
 }
@@ -104,10 +105,11 @@ export const readPackageFiles = async (
   directory: string
 ): Promise<PackageFiles> => {
   const denoFile = join(directory, 'deno.json');
+  const manifestFile = join(directory, 'package.json');
   const [manifest, config] = await Promise.all([
-    readManifest(join(directory, 'package.json')),
+    readManifest(manifestFile),
     readDenoConfig(denoFile),
   ]);
 
-  return { directory, denoFile, manifest, config };
+  return { directory, denoFile, manifestFile, manifest, config };
 };
