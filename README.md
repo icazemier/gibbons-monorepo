@@ -23,14 +23,51 @@ versions are pinned via the workspace [catalog](pnpm-workspace.yaml)).
 ```bash
 pnpm install              # install all workspaces
 pnpm build                # build every package
-pnpm test                 # test every package
-pnpm lint                 # lint the whole workspace
+pnpm test                 # repo tooling, then every package
+pnpm lint                 # typecheck, import maps, eslint
+pnpm lint:fix             # the same, applying every fix it can
 ```
 
 Target a single package with pnpm filters:
 
 ```bash
 pnpm --filter @icazemier/gibbons-postgresql test
+```
+
+### Dependency versions are declared once
+
+Both packages publish to [JSR](https://jsr.io/@icazemier) as well as npm, and
+JSR resolves a package's imports through the `imports` map in its `deno.json`
+rather than through `package.json`. That map has to restate the dependency
+ranges, because **JSR cannot read pnpm's `catalog:` protocol** — and it does not
+fail when it meets one. It logs `Ignoring failed to resolve package.json
+dependency` and publishes a package with those dependencies missing.
+
+The map is therefore treated as a generated artifact, in the same way a
+lockfile is:
+
+- `package.json` is the only place a version is authored, resolving through the
+  workspace [catalog](pnpm-workspace.yaml) where both packages share a
+  dependency.
+- `pnpm lint:fix` regenerates every `deno.json` import map from it.
+- `pnpm lint` fails when a committed map has drifted, in either direction: a
+  range that no longer matches, or a runtime dependency with no entry at all.
+
+**Move a dependency range, then run `pnpm lint:fix` and commit both files.**
+
+An import backed by neither `dependencies` nor `peerDependencies` is reported
+but never rewritten — that is a manifest bug, and quietly deleting the entry
+would hide it.
+
+### Repo tooling
+
+`tools/` holds the checks that operate on the workspace rather than on a single
+package. It is TypeScript executed directly through Node's type stripping, so
+nothing needs building ahead of `pnpm lint`.
+
+```bash
+pnpm typecheck            # tsc --noEmit over tools/
+pnpm test:tools           # node --test tools/*.spec.ts
 ```
 
 ## Releases

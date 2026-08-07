@@ -354,6 +354,24 @@ describe('Resize: expand and shrink', () => {
 
   // ---------- External transaction session ----------
 
+  it('expandPermissions rolls its seeded slots back when the transaction aborts', async () => {
+    const before = await dbPermissions.countDocuments();
+
+    // The caller owns this transaction and aborts it, so nothing expandPermissions
+    // wrote may survive — including the slots the seeder inserts.
+    const session = mongoClient.startSession();
+    try {
+      session.startTransaction();
+      await adapter.expandPermissions(4, session);
+      await session.abortTransaction();
+    } finally {
+      await session.endSession();
+    }
+
+    const after = await dbPermissions.countDocuments();
+    expect(after).toBe(before);
+  });
+
   it('expand + shrink within an external transaction session', async () => {
     const perm = await adapter.allocatePermission({
       name: 'txPerm',
