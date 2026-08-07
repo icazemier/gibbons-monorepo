@@ -88,12 +88,10 @@
     "dotenv": "catalog:",
     "embedded-postgres": "18.3.0-beta.17",
     "noop-stream": "catalog:",
-    "npm-run-all2": "catalog:",
     "pg": "^8.11.0",
     "rimraf": "catalog:",
     "semantic-release": "catalog:",
     "semantic-release-monorepo": "catalog:",
-    "ts-node": "catalog:",
     "typedoc": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

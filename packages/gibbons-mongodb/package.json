@@ -86,11 +86,9 @@
     "mongodb": "^6.16.0",
     "mongodb-memory-server": "^11.2.0",
     "noop-stream": "catalog:",
-    "npm-run-all2": "catalog:",
     "rimraf": "catalog:",
     "semantic-release": "catalog:",
     "semantic-release-monorepo": "catalog:",
-    "ts-node": "catalog:",
     "typedoc": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
