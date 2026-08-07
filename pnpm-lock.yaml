@@ -15,9 +15,6 @@ catalogs:
     '@eslint/js':
       specifier: ^10.0.0
       version: 10.0.1
-    '@icazemier/gibbons':
-      specifier: ^6.0.10
-      version: 6.0.10
     '@types/node':
       specifier: ^24.13.3
       version: 24.13.3
@@ -30,9 +27,6 @@ catalogs:
     conventional-changelog-conventionalcommits:
       specifier: ^10.2.1
       version: 10.2.1
-    cosmiconfig:
-      specifier: ^10.0.0
-      version: 10.0.0
     cross-env:
       specifier: ^10.1.0
       version: 10.1.0
@@ -81,9 +75,6 @@ catalogs:
     vitest:
       specifier: ^4.1.10
       version: 4.1.10
-    yargs:
-      specifier: ^17.7.2
-      version: 17.7.2
 
 overrides:
   minimatch: ^10.2.6
@@ -139,13 +130,13 @@ importers:
   packages/gibbons-mongodb:
     dependencies:
       '@icazemier/gibbons':
-        specifier: 'catalog:'
+        specifier: ^6.0.10
         version: 6.0.10
       cosmiconfig:
-        specifier: 'catalog:'
+        specifier: ^10.0.0
         version: 10.0.0
       yargs:
-        specifier: 'catalog:'
+        specifier: ^17.7.2
         version: 17.7.2
     devDependencies:
       '@types/node':
@@ -203,16 +194,16 @@ importers:
   packages/gibbons-postgresql:
     dependencies:
       '@icazemier/gibbons':
-        specifier: 'catalog:'
+        specifier: ^6.0.10
         version: 6.0.10
       cosmiconfig:
-        specifier: 'catalog:'
+        specifier: ^10.0.0
         version: 10.0.0
       pg-cursor:
         specifier: ^2.21.0
         version: 2.21.0(pg@8.21.0)
       yargs:
-        specifier: 'catalog:'
+        specifier: ^17.7.2
         version: 17.7.2
     devDependencies:
       '@types/node':
