@@ -46,10 +46,30 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+      - run: pnpm test:tools
+
+  # Gates publishing on the package actually being installable by a consumer.
+  # The lint guard rejects a known-bad range by name; this proves the real path
+  # end to end, which is the check that was missing when 2.0.0 through 3.0.1
+  # shipped uninstallable.
+  pack:
+    name: Verify packages install as a consumer
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'skip ci') && !contains(github.event.head_commit.message, 'skip release')"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.x
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm verify:pack
 
   release:
     name: Semantic Release ${{ matrix.package }}
-    needs: [test, lint]
+    needs: [test, lint, pack]
     runs-on: ubuntu-latest
     permissions:
       contents: write
