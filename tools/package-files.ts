@@ -75,6 +75,13 @@ export const readManifest = async (file: string): Promise<PackageManifest> => {
       parsed.peerDependencies === undefined
         ? undefined
         : toStringRecord(parsed.peerDependencies, `${file}: peerDependencies`),
+    optionalDependencies:
+      parsed.optionalDependencies === undefined
+        ? undefined
+        : toStringRecord(
+            parsed.optionalDependencies,
+            `${file}: optionalDependencies`
+          ),
   };
 };
 

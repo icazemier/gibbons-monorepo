@@ -24,6 +24,8 @@ export interface PackageManifest {
   readonly name: string;
   readonly dependencies?: DependencyRanges;
   readonly peerDependencies?: DependencyRanges;
+  /** Unused by the import map; carried so publish checks see every field. */
+  readonly optionalDependencies?: DependencyRanges;
 }
 
 /** An import map, keyed by the specifier a source file writes. */
