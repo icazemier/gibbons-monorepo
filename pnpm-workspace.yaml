@@ -13,6 +13,12 @@ packages:
 # resolves it fine locally. devDependencies are safe: consumers never resolve
 # them.
 catalog:
+  # Shared RUNTIME versions. Packages must not reference these with "catalog:"
+  # — see above. `pnpm lint` checks that each package declares the literal range
+  # named here, and `pnpm lint:fix` writes it. Bump once, here.
+  "@icazemier/gibbons": ^6.0.10
+  cosmiconfig: ^10.0.0
+  yargs: ^17.7.2
   # shared dev tooling
   "@commitlint/cli": ^21.2.1
   "@commitlint/config-conventional": ^21.2.0
