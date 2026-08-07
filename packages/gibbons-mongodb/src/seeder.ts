@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, ClientSession } from 'mongodb';
 import { Gibbon } from '@icazemier/gibbons';
 import {
   Config,
@@ -168,11 +168,14 @@ export class MongoDbSeeder {
    * @param collection - Which collection to seed ('group' or 'permission')
    * @param fromPosition - Start position (inclusive)
    * @param toPosition - End position (inclusive)
+   * @param session - Session of the caller's transaction. Without it the
+   *   inserts land outside that transaction and survive its rollback.
    */
   async seedRange(
     collection: 'group' | 'permission',
     fromPosition: number,
-    toPosition: number
+    toPosition: number,
+    session?: ClientSession
   ): Promise<void> {
     if (
       !Number.isInteger(fromPosition) ||
@@ -193,14 +196,14 @@ export class MongoDbSeeder {
         });
         if (batch.length >= BATCH_SIZE) {
           await this.dbCollection.permission
-            .insertMany(batch, { ordered: false })
+            .insertMany(batch, { ordered: false, session })
             .catch((err) => this.ignoreDuplicateKeyErrors(err));
           batch.length = 0;
         }
       }
       if (batch.length > 0) {
         await this.dbCollection.permission
-          .insertMany(batch, { ordered: false })
+          .insertMany(batch, { ordered: false, session })
           .catch((err) => this.ignoreDuplicateKeyErrors(err));
       }
     } else {
@@ -215,14 +218,14 @@ export class MongoDbSeeder {
         });
         if (batch.length >= BATCH_SIZE) {
           await this.dbCollection.group
-            .insertMany(batch, { ordered: false })
+            .insertMany(batch, { ordered: false, session })
             .catch((err) => this.ignoreDuplicateKeyErrors(err));
           batch.length = 0;
         }
       }
       if (batch.length > 0) {
         await this.dbCollection.group
-          .insertMany(batch, { ordered: false })
+          .insertMany(batch, { ordered: false, session })
           .catch((err) => this.ignoreDuplicateKeyErrors(err));
       }
     }

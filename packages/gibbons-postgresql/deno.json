@@ -23,7 +23,7 @@
   "imports": {
     "pg": "npm:pg@^8.11.0",
     "pg-cursor": "npm:pg-cursor@^2.21.0",
-    "@icazemier/gibbons": "npm:@icazemier/gibbons@^6.0.7",
+    "@icazemier/gibbons": "npm:@icazemier/gibbons@^6.0.10",
     "cosmiconfig": "npm:cosmiconfig@^10.0.0",
     "yargs": "npm:yargs@^17.7.2",
     "yargs/helpers": "npm:yargs@^17.7.2/helpers"

@@ -16,8 +16,8 @@ catalogs:
       specifier: ^10.0.0
       version: 10.0.1
     '@icazemier/gibbons':
-      specifier: ^6.0.7
-      version: 6.0.9
+      specifier: ^6.0.10
+      version: 6.0.10
     '@types/node':
       specifier: ^24.13.3
       version: 24.13.3
@@ -87,14 +87,12 @@ catalogs:
 
 overrides:
   minimatch: ^10.2.6
-  lodash: ^4.18.1
   lodash-es: ^4.18.1
   vite: ^7.3.2
   fast-uri: ^3.1.5
   follow-redirects: ^1.16.0
   postcss: ^8.5.23
   picomatch: ^4.0.5
-  ip-address: ^10.4.0
   brace-expansion: ^5.0.9
   js-yaml: ^4.3.0
   shell-quote: ^1.10.0
@@ -109,13 +107,16 @@ importers:
     devDependencies:
       '@commitlint/cli':
         specifier: 'catalog:'
-        version: 21.2.1(@types/node@25.9.3)(conventional-commits-parser@7.1.2)(typescript@6.0.3)
+        version: 21.2.1(@types/node@24.13.3)(conventional-commits-parser@7.1.2)(typescript@6.0.3)
       '@commitlint/config-conventional':
         specifier: 'catalog:'
         version: 21.2.0
       '@eslint/js':
         specifier: 'catalog:'
         version: 10.0.1(eslint@10.8.0(jiti@2.6.1))
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.3
       eslint:
         specifier: 'catalog:'
         version: 10.8.0(jiti@2.6.1)
@@ -139,7 +140,7 @@ importers:
     dependencies:
       '@icazemier/gibbons':
         specifier: 'catalog:'
-        version: 6.0.9
+        version: 6.0.10
       cosmiconfig:
         specifier: 'catalog:'
         version: 10.0.0
@@ -203,7 +204,7 @@ importers:
     dependencies:
       '@icazemier/gibbons':
         specifier: 'catalog:'
-        version: 6.0.9
+        version: 6.0.10
       cosmiconfig:
         specifier: 'catalog:'
         version: 10.0.0
@@ -673,8 +674,8 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@icazemier/gibbons@6.0.9':
-    resolution: {integrity: sha512-JtoPmqpJWECb27g0CA4UGm1zLui4b3Qmsa5gJRIKJ3hoDfL+rKM/aVYSPOG6igy+hM/hf59+GnaGVH5MeE16UA==}
+  '@icazemier/gibbons@6.0.10':
+    resolution: {integrity: sha512-moFzv87x/x78RnOdmcEqzYmMNxs8GY6iS/weGUszVjWT/qSHSTcW7UvwN36NlsFl0uViC9DWGQctz2905dXTZg==}
     engines: {node: '>=20.0.0'}
     os: [darwin, linux, win32]
 
@@ -3415,12 +3416,12 @@ snapshots:
   '@colors/colors@1.5.0':
     optional: true
 
-  '@commitlint/cli@21.2.1(@types/node@25.9.3)(conventional-commits-parser@7.1.2)(typescript@6.0.3)':
+  '@commitlint/cli@21.2.1(@types/node@24.13.3)(conventional-commits-parser@7.1.2)(typescript@6.0.3)':
     dependencies:
       '@commitlint/config-conventional': 21.2.0
       '@commitlint/format': 21.2.0
       '@commitlint/lint': 21.2.0
-      '@commitlint/load': 21.2.0(@types/node@25.9.3)(typescript@6.0.3)
+      '@commitlint/load': 21.2.0(@types/node@24.13.3)(typescript@6.0.3)
       '@commitlint/read': 21.2.1(conventional-commits-parser@7.1.2)
       '@commitlint/types': 21.2.0
       tinyexec: 1.2.4
@@ -3465,14 +3466,14 @@ snapshots:
       '@commitlint/rules': 21.2.0
       '@commitlint/types': 21.2.0
 
-  '@commitlint/load@21.2.0(@types/node@25.9.3)(typescript@6.0.3)':
+  '@commitlint/load@21.2.0(@types/node@24.13.3)(typescript@6.0.3)':
     dependencies:
       '@commitlint/config-validator': 21.2.0
       '@commitlint/execute-rule': 21.0.1
       '@commitlint/resolve-extends': 21.2.0
       '@commitlint/types': 21.2.0
       cosmiconfig: 9.0.2(typescript@6.0.3)
-      cosmiconfig-typescript-loader: 6.3.0(@types/node@25.9.3)(cosmiconfig@9.0.2(typescript@6.0.3))(typescript@6.0.3)
+      cosmiconfig-typescript-loader: 6.3.0(@types/node@24.13.3)(cosmiconfig@9.0.2(typescript@6.0.3))(typescript@6.0.3)
       es-toolkit: 1.50.0
       is-plain-obj: 4.1.0
       picocolors: 1.1.1
@@ -3700,7 +3701,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@icazemier/gibbons@6.0.9': {}
+  '@icazemier/gibbons@6.0.10': {}
 
   '@jridgewell/resolve-uri@3.1.2': {}
 
@@ -4027,12 +4028,12 @@ snapshots:
 
   '@types/pg-cursor@2.7.2':
     dependencies:
-      '@types/node': 24.13.3
+      '@types/node': 25.9.3
       '@types/pg': 8.20.0
 
   '@types/pg@8.20.0':
     dependencies:
-      '@types/node': 24.13.3
+      '@types/node': 25.9.3
       pg-protocol: 1.14.0
       pg-types: 2.2.0
 
@@ -4463,9 +4464,9 @@ snapshots:
 
   core-util-is@1.0.3: {}
 
-  cosmiconfig-typescript-loader@6.3.0(@types/node@25.9.3)(cosmiconfig@9.0.2(typescript@6.0.3))(typescript@6.0.3):
+  cosmiconfig-typescript-loader@6.3.0(@types/node@24.13.3)(cosmiconfig@9.0.2(typescript@6.0.3))(typescript@6.0.3):
     dependencies:
-      '@types/node': 25.9.3
+      '@types/node': 24.13.3
       cosmiconfig: 9.0.2(typescript@6.0.3)
       jiti: 2.6.1
       typescript: 6.0.3
