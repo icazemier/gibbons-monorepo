@@ -1,6 +1,40 @@
 packages:
   - "packages/*"
 
+# pnpm 11 stopped reading the "pnpm" field in package.json, so everything below
+# lives here now. It is the same configuration, in the shape v11 reads.
+
+# The structural defence against install-script supply-chain attacks: a package
+# not listed here never runs its lifecycle scripts. Only four of this tree's
+# dependencies ask to build at all, and they are these. v11 renamed this from
+# onlyBuiltDependencies and made it a map, so a package can also be denied
+# explicitly rather than merely left off.
+allowBuilds:
+  esbuild: true
+  mongodb-memory-server: true
+  embedded-postgres: true
+  "@embedded-postgres/darwin-arm64": true
+  "@embedded-postgres/linux-x64": true
+
+# Security pins, not cruft. Every entry maps to an advisory in a transitive of
+# eslint, semantic-release or typedoc — packages we cannot bump directly because
+# nothing declares them. Removing one reopens its advisory.
+overrides:
+  minimatch: ^10.2.6
+  lodash-es: ^4.18.1
+  vite: ^7.3.2
+  fast-uri: ^3.1.5
+  follow-redirects: ^1.16.0
+  postcss: ^8.5.23
+  picomatch: ^4.0.5
+  brace-expansion: ^5.0.9
+  js-yaml: ^4.3.0
+  shell-quote: ^1.10.0
+  linkify-it: ^5.0.2
+  esbuild: ^0.28.1
+  undici@6: ^6.28.0
+  undici@7: ^7.29.0
+
 # Single source of truth for shared DEV dependency versions.
 # Packages reference these via "catalog:". Bump once here.
 #
