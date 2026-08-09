@@ -60,7 +60,6 @@ npm install @icazemier/gibbons-mongodb mongodb
     "dbName": "myapp",
     "permissionByteLength": 256,
     "groupByteLength": 256,
-    "mongoDbMutationConcurrency": 10,
     "dbStructure": {
         "user": { "collectionName": "users" },
         "group": { "collectionName": "groups" },
@@ -201,7 +200,6 @@ Every public method accepts an optional `session` parameter. When omitted, multi
 | `dbName` | string | MongoDB database name |
 | `permissionByteLength` | number | Bytes for permissions (256 = 2,048 slots) |
 | `groupByteLength` | number | Bytes for groups (256 = 2,048 slots) |
-| `mongoDbMutationConcurrency` | number | Concurrency limit for bulk operations |
 | `dbStructure.user.collectionName` | string | User collection (can be existing) |
 | `dbStructure.group.collectionName` | string | Group collection (managed by Gibbons) |
 | `dbStructure.permission.collectionName` | string | Permission collection (managed by Gibbons) |
