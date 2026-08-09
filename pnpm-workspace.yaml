@@ -21,8 +21,15 @@ allowBuilds:
 # them. Removing one reopens its advisory, so an override earns its place by
 # still being load-bearing.
 #
-# `shell-quote` was dropped when semantic-release left: no dependent remains in
-# the tree at all.
+# Four were dropped when semantic-release left, each pinning something no
+# longer in the tree: `shell-quote`, `lodash-es`, and `undici` at both 6 and 7.
+# An override for an absent package is not a safety margin, it is a claim that
+# stops being checked — the lockfile held no entry for any of them, only the
+# override lines themselves.
+#
+# `vite` is doing a different job from the rest and should not be read as a CVE
+# floor: vitest accepts `^6 || ^7 || ^8`, so this pin is a *ceiling* keeping the
+# major at 7 rather than a floor over a vulnerable version.
 #
 # `js-yaml` and `read-yaml-file` are one pin, not two. changesets reaches
 # js-yaml through `read-yaml-file`, whose 1.x line calls the `safeLoad` that
@@ -35,7 +42,6 @@ allowBuilds:
 # The floor is ^4.3.1, not ^4.3.0: 4.3.0 is still vulnerable to GHSA-5p4m.
 overrides:
   minimatch: ^10.2.6
-  lodash-es: ^4.18.1
   vite: ^7.3.2
   fast-uri: ^3.1.5
   follow-redirects: ^1.16.0
@@ -46,8 +52,6 @@ overrides:
   read-yaml-file: ^2.1.0
   linkify-it: ^5.0.2
   esbuild: ^0.28.1
-  undici@6: ^6.28.0
-  undici@7: ^7.29.0
 
 # Single source of truth for shared DEV dependency versions.
 # Packages reference these via "catalog:". Bump once here.

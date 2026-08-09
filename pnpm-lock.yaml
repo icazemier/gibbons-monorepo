@@ -69,7 +69,6 @@ catalogs:
 
 overrides:
   minimatch: ^10.2.6
-  lodash-es: ^4.18.1
   vite: ^7.3.2
   fast-uri: ^3.1.5
   follow-redirects: ^1.16.0
@@ -80,8 +79,6 @@ overrides:
   read-yaml-file: ^2.1.0
   linkify-it: ^5.0.2
   esbuild: ^0.28.1
-  undici@6: ^6.28.0
-  undici@7: ^7.29.0
 
 importers:
 
