@@ -53,7 +53,9 @@
     "clean:build": "rimraf build",
     "clean:docs": "rimraf docs",
     "release": "semantic-release",
-    "release:dry": "semantic-release --dry-run"
+    "release:dry": "semantic-release --dry-run",
+    "publish:jsr": "jsr publish --allow-dirty",
+    "verify:jsr": "jsr publish --dry-run --allow-dirty"
   },
   "repository": {
     "type": "git",
@@ -83,6 +85,7 @@
     "conventional-changelog-conventionalcommits": "catalog:",
     "cross-env": "catalog:",
     "dotenv": "catalog:",
+    "jsr": "catalog:",
     "mongodb": "^7.5.0",
     "mongodb-memory-server": "^11.2.0",
     "noop-stream": "catalog:",

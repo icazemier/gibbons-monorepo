@@ -176,10 +176,12 @@ jobs:
           '
       - name: Publish to JSR
         if: steps.version.outputs.skip != 'true'
-        # Version-pinned: `npx jsr` resolves fresh from the registry on every run,
-        # which would execute unreviewed code in a job holding an OIDC token.
-        # `--allow-dirty` is required because the deno.json version is written above.
-        run: npx --yes jsr@0.14.3 publish --allow-dirty
+        # jsr is a pinned devDependency invoked through a script, so it comes out
+        # of the lockfile with an integrity hash. `npx` resolved it fresh from the
+        # registry on every run, which put an unverified download next to an OIDC
+        # publishing token. `--allow-dirty` is required because the deno.json
+        # version is written above.
+        run: pnpm run publish:jsr
 
   # A release cut from main is tagged on main's own commit, and nothing brings
   # that commit back. development then cannot see that the version shipped, so
