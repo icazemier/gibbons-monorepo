@@ -69,7 +69,7 @@
     "access": "public"
   },
   "peerDependencies": {
-    "mongodb": "^6.0.0"
+    "mongodb": "^6.0.0 || ^7.0.0"
   },
   "dependencies": {
     "@icazemier/gibbons": "^6.0.10",
@@ -83,7 +83,7 @@
     "conventional-changelog-conventionalcommits": "catalog:",
     "cross-env": "catalog:",
     "dotenv": "catalog:",
-    "mongodb": "^6.16.0",
+    "mongodb": "^7.5.0",
     "mongodb-memory-server": "^11.2.0",
     "noop-stream": "catalog:",
     "rimraf": "catalog:",

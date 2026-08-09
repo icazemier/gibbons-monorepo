@@ -21,7 +21,7 @@
     "SEMANTIC-VERSIONING-QUICKSTART.md"
   ],
   "imports": {
-    "mongodb": "npm:mongodb@^6.0.0",
+    "mongodb": "npm:mongodb@^7.0.0",
     "@icazemier/gibbons": "npm:@icazemier/gibbons@^6.0.10",
     "cosmiconfig": "npm:cosmiconfig@^10.0.0",
     "yargs": "npm:yargs@^17.7.2",
