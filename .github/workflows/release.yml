@@ -67,23 +67,25 @@ jobs:
       - run: pnpm build
       - run: pnpm verify:pack
 
-  # Two jobs in one, chosen by whether changesets are pending.
+  # Versioning happens in place and publishing follows in the same run, so a
+  # merge into a release branch is the whole release. `development` publishes
+  # the beta channel, `main` publishes latest, and which one is decided from the
+  # branch by tools/apply-pre-mode.ts.
   #
-  # With changesets pending, the action opens (or updates) a "Version Packages"
-  # pull request carrying the version bump, the changelog and the regenerated
-  # deno.json. With none pending — which is the state right after that PR is
-  # merged — it runs the publish command instead. So a release is always two
-  # merges, and the version is reviewable before anything reaches a registry.
+  # This job pushes the version commit straight to a protected branch, which the
+  # `Release branches` ruleset otherwise forbids. It works because the GitHub
+  # Actions app is a bypass actor on that ruleset. Removing that bypass breaks
+  # releases — the push is rejected and nothing publishes.
   #
-  # That shape is not a preference: main and development both require a pull
-  # request, so no bot can push a version commit straight to a release branch.
+  # The push carries GITHUB_TOKEN, and GitHub deliberately does not start new
+  # workflow runs for those, so the version commit cannot re-trigger this
+  # workflow. That is what keeps it from looping.
   release:
     name: Release
     needs: [test, lint, pack]
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
       # OIDC for trusted publishing on npm. `packages: write` is deliberately
       # absent: these packages go to npmjs.com, not GitHub Packages.
       id-token: write
@@ -101,18 +103,31 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      # `changeset publish` shells out to `pnpm publish` in a workspace, which
-      # reads the OIDC token itself — there is no npm to upgrade and no token to
-      # store. It needs pnpm/action-setup at v6.0.10 or newer; older releases
-      # bootstrapped a pnpm that could not see the token and failed with a 404.
-      - name: Version or publish
+
+      # Consumes any pending changesets into the version, the changelog, the
+      # lockfile and deno.json. Does nothing when none are pending, which is the
+      # correct outcome for a merge that changed no published behaviour.
+      - name: Apply pending changesets
+        run: pnpm run release:version
+
+      - name: Commit the version bump
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --staged --quiet || git commit -m 'chore: version packages'
+          git push origin HEAD:"$GITHUB_REF_NAME"
+
+      # Publishes whatever is now unpublished, then tags it and cuts the GitHub
+      # release. `changeset publish` shells out to `pnpm publish` in a workspace,
+      # which reads the OIDC token itself — there is no npm to upgrade and no
+      # token to store. It needs pnpm/action-setup at v6.0.10 or newer; older
+      # releases bootstrapped a pnpm that could not see the token and 404'd.
+      - name: Publish
         id: changesets
         uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
-          version: pnpm run release:version
           publish: pnpm run release
-          title: 'chore: version packages'
-          commit: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -134,6 +149,10 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # The release job commits the version bump during this run, so the
+          # triggering commit still carries the previous version. Check out the
+          # branch tip instead, or JSR republishes the version already released.
+          ref: ${{ github.ref_name }}
           # This job runs `jsr` (third-party code) while holding an OIDC token;
           # don't also leave GITHUB_TOKEN behind in .git/config for it to read.
           persist-credentials: false
@@ -160,7 +179,8 @@ jobs:
   # through package.json instead of through tags.
   #
   # GitFlow's answer is the back-merge, so it happens here rather than by
-  # remembering. development requires a pull request, so this opens one.
+  # remembering. It pushes straight to development on the same ruleset bypass
+  # the release job uses, so no pull request and no permission to open one.
   backmerge:
     name: Keep development in step with main
     needs: release
@@ -168,15 +188,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - name: Open a back-merge pull request when development is behind
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: chore/backmerge-main
+      - name: Merge main into development when it is behind
         run: |
           set -euo pipefail
           git fetch origin main development
@@ -185,22 +201,13 @@ jobs:
             exit 0
           fi
           git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git checkout -B "$BRANCH" origin/development
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -B backmerge-main origin/development
           if ! git merge --no-ff origin/main -m 'chore: back-merge main into development'; then
             echo "::error::main does not merge cleanly into development. Resolve it by hand; until then every release cut on main stays invisible to the beta channel."
             exit 1
           fi
-          # Plain --force, not --force-with-lease: nothing fetched this branch,
-          # so there is no remote-tracking ref for a lease to compare against and
-          # it rejects the push the moment the branch already exists from an
-          # earlier release. The branch is disposable and only this job writes it.
-          git push --force origin "$BRANCH"
-          open=$(gh pr list --head "$BRANCH" --base development --state open --json number --jq '.[].number')
-          if [ -n "$open" ]; then
-            echo "pull request #$open already open for $BRANCH"
-            exit 0
-          fi
-          gh pr create --base development --head "$BRANCH" \
-            --title 'Back-merge main into development' \
-            --body 'Carries the release commits from main back to development, so the beta channel computes its next version from what has actually shipped. Opened by the Release workflow.'
+          # Never forced: development is a real branch, so a rejected push means
+          # someone else moved it and the merge should be recomputed rather than
+          # overwritten. Re-running this job redoes it against the new tip.
+          git push origin HEAD:development
