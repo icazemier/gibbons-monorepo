@@ -55,12 +55,17 @@ is the right outcome for a change with nothing user-facing in it.
 A release cut on `main` is back-merged into `development` automatically, so the
 beta channel computes its next version from what has actually shipped.
 
-Both release branches require pull requests from people. The workflow pushes
-directly because the GitHub Actions app is a **bypass actor** on the
-`Release branches` ruleset. That bypass is load-bearing: remove it and the
-version commit is rejected, so nothing publishes. Those pushes carry
-`GITHUB_TOKEN`, and GitHub deliberately does not start workflow runs for them,
-which is what stops a release from re-triggering itself.
+You will see two short-lived pull requests go by, `chore: version packages` and
+`chore: back-merge main into development`. **Ignore them.** The workflow opens
+and merges each one itself; they exist only because the `Release branches`
+ruleset requires changes to arrive by pull request, and nothing here can bypass
+that — GitHub only accepts the Actions app as a bypass actor on
+organisation-owned repositories, and this one belongs to a user.
+
+That constraint is also why publishing happens inside the same run as the
+version bump rather than being triggered by the merge: merges made with
+`GITHUB_TOKEN` deliberately start no workflow run. The same property is what
+stops a release from re-triggering itself.
 
 ## Publishing credentials
 
