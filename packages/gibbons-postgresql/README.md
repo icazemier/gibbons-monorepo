@@ -373,4 +373,4 @@ import map is regenerated rather than hand-edited: run `pnpm lint:fix` from the
 repo root after changing a range, and commit both files. `pnpm lint` fails when
 they disagree.
 
-This project uses [conventional commits](https://www.conventionalcommits.org/) with automated semantic versioning. See [SEMANTIC-VERSIONING-QUICKSTART.md](SEMANTIC-VERSIONING-QUICKSTART.md) for details.
+This project uses [conventional commits](https://www.conventionalcommits.org/) for commit messages. User-facing changes also need a changeset (`pnpm changeset`). See [RELEASING.md](../../RELEASING.md) for details.

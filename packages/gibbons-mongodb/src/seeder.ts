@@ -23,7 +23,6 @@ const BATCH_SIZE = 1000;
  *   dbName: 'mydb',
  *   permissionByteLength: 256,
  *   groupByteLength: 256,
- *   mongoDbMutationConcurrency: 10,
  *   dbStructure: {
  *     user: { collectionName: 'users' },
  *     group: { collectionName: 'groups' },

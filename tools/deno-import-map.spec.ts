@@ -7,10 +7,14 @@ import {
   denoResolvableRange,
   formatNpmSpecifier,
   isRepairable,
+  isVersionCurrent,
   parseCatalog,
   parseNpmSpecifier,
+  projectDenoConfig,
   resolveDeclaredRange,
   resolveImportMap,
+  type DenoFields,
+  type ImportMap,
   type PackageManifest,
 } from './deno-import-map.ts';
 import { readCatalog, readPackageFiles } from './package-files.ts';
@@ -159,6 +163,7 @@ describe('resolveDeclaredRange', () => {
   it('follows catalog: into the workspace catalog', () => {
     const manifest: PackageManifest = {
       name: 'pkg',
+      version: '1.0.0',
       dependencies: { cosmiconfig: 'catalog:' },
     };
 
@@ -171,6 +176,7 @@ describe('resolveDeclaredRange', () => {
   it('returns a literal range unchanged', () => {
     const manifest: PackageManifest = {
       name: 'pkg',
+      version: '1.0.0',
       dependencies: { 'pg-cursor': '^2.21.0' },
     };
 
@@ -183,6 +189,7 @@ describe('resolveDeclaredRange', () => {
   it('reads peerDependencies when the name is not a dependency', () => {
     const manifest: PackageManifest = {
       name: 'pkg',
+      version: '1.0.0',
       peerDependencies: { mongodb: '^6.0.0' },
     };
 
@@ -192,6 +199,7 @@ describe('resolveDeclaredRange', () => {
   it('prefers dependencies over peerDependencies', () => {
     const manifest: PackageManifest = {
       name: 'pkg',
+      version: '1.0.0',
       dependencies: { pg: '^8.11.0' },
       peerDependencies: { pg: '^7.0.0' },
     };
@@ -201,7 +209,11 @@ describe('resolveDeclaredRange', () => {
 
   it('is undefined for a name the manifest never declares', () => {
     assert.equal(
-      resolveDeclaredRange({ name: 'pkg' }, catalog, 'vitest'),
+      resolveDeclaredRange(
+        { name: 'pkg', version: '1.0.0' },
+        catalog,
+        'vitest'
+      ),
       undefined
     );
   });
@@ -209,6 +221,7 @@ describe('resolveDeclaredRange', () => {
   it('throws when catalog: names an entry the catalog lacks', () => {
     const manifest: PackageManifest = {
       name: 'pkg',
+      version: '1.0.0',
       dependencies: { yargs: 'catalog:' },
     };
 
@@ -221,6 +234,7 @@ describe('resolveDeclaredRange', () => {
   it('refuses a named catalog rather than resolving it wrongly', () => {
     const manifest: PackageManifest = {
       name: 'pkg',
+      version: '1.0.0',
       dependencies: { cosmiconfig: 'catalog:tooling' },
     };
 
@@ -236,6 +250,7 @@ describe('resolveImportMap', () => {
 
   const manifest: PackageManifest = {
     name: '@icazemier/gibbons-mongodb',
+    version: '1.0.0',
     dependencies: { cosmiconfig: 'catalog:', yargs: 'catalog:' },
     peerDependencies: { mongodb: '^6.0.0' },
   };
@@ -478,6 +493,79 @@ describe('denoResolvableRange', () => {
     assert.equal(denoResolvableRange('6 - 7'), null);
     assert.equal(denoResolvableRange('*'), null);
     assert.equal(denoResolvableRange('workspace:*'), null);
+  });
+});
+
+describe('projectDenoConfig', () => {
+  const manifest: PackageManifest = { name: 'pkg', version: '2.0.0' };
+  const imports: ImportMap = { yargs: 'npm:yargs@^17.7.2' };
+
+  it("writes the manifest's version into the config, replacing what was there", () => {
+    const config: DenoFields = { version: '1.0.0' };
+
+    const result = projectDenoConfig(config, manifest, imports);
+
+    assert.equal(result.version, '2.0.0');
+  });
+
+  it('replaces the imports wholesale with the ones given', () => {
+    const config: DenoFields = {
+      imports: { old: 'npm:old@^1.0.0' },
+    };
+
+    const result = projectDenoConfig(config, manifest, imports);
+
+    assert.deepEqual(result.imports, imports);
+  });
+
+  it('preserves unrelated hand-written fields untouched', () => {
+    const config: DenoFields = {
+      name: 'pkg',
+      license: 'MIT',
+      exports: './mod.ts',
+      exclude: ['dist'],
+    };
+
+    const result = projectDenoConfig(config, manifest, imports);
+
+    assert.equal(result.name, 'pkg');
+    assert.equal(result.license, 'MIT');
+    assert.equal(result.exports, './mod.ts');
+    assert.deepEqual(result.exclude, ['dist']);
+  });
+
+  it('keeps the original key order when the config already had version and imports', () => {
+    const config: DenoFields = {
+      name: 'pkg',
+      version: '1.0.0',
+      exports: './mod.ts',
+      imports: { old: 'npm:old@^1.0.0' },
+    };
+
+    const result = projectDenoConfig(config, manifest, imports);
+
+    assert.deepEqual(Object.keys(result), [
+      'name',
+      'version',
+      'exports',
+      'imports',
+    ]);
+  });
+});
+
+describe('isVersionCurrent', () => {
+  const manifest: PackageManifest = { name: 'pkg', version: '1.2.3' };
+
+  it('is true when the two versions are equal', () => {
+    assert.equal(isVersionCurrent({ version: '1.2.3' }, manifest), true);
+  });
+
+  it('is false when they differ', () => {
+    assert.equal(isVersionCurrent({ version: '1.2.4' }, manifest), false);
+  });
+
+  it('is false when the config has no version at all', () => {
+    assert.equal(isVersionCurrent({}, manifest), false);
   });
 });
 

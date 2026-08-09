@@ -28,7 +28,6 @@ function makeConfig(overrides: Partial<Config> = {}): Config {
     dbName: 'gibbons_resize_test',
     permissionByteLength: 2, // 16 permissions
     groupByteLength: 2, // 16 groups
-    mongoDbMutationConcurrency: 10,
     dbStructure: {
       user: { collectionName: 'users' },
       group: { collectionName: 'groups' },

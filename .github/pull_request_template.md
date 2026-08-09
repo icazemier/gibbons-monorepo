@@ -42,3 +42,4 @@ Closes #
 - [ ] I have made corresponding changes to the documentation
 - [ ] My changes generate no new warnings or errors
 - [ ] I have used conventional commit messages
+- [ ] I have added a changeset (`pnpm changeset`) if this change is user-facing

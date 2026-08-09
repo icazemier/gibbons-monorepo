@@ -1,5 +1,5 @@
 /**
- * Derives each package's `deno.json` import map from its `package.json`.
+ * Derives each package's `deno.json` from its `package.json`.
  *
  * JSR cannot resolve pnpm's `catalog:` protocol. Publishing without an import
  * map does not fail: `jsr publish` reports "Ignoring failed to resolve
@@ -13,6 +13,13 @@
  * when the committed copy has drifted. `package.json` remains the only place a
  * dependency version is authored.
  *
+ * The package's own version is generated the same way and for the same reason.
+ * JSR reads it from `deno.json`, while changesets writes it only to
+ * `package.json`, so the two drift the moment a release happens. Deriving one
+ * from the other keeps a single authored version and lets `pnpm lint` catch the
+ * drift, which is otherwise invisible until JSR silently republishes or skips a
+ * version.
+ *
  * Everything exported here is pure. All filesystem and process access lives in
  * `check-deno-import-map.ts`, which keeps this testable against literals.
  */
@@ -22,6 +29,7 @@ export type DependencyRanges = Readonly<Record<string, string>>;
 
 export interface PackageManifest {
   readonly name: string;
+  readonly version: string;
   readonly dependencies?: DependencyRanges;
   readonly peerDependencies?: DependencyRanges;
   /** Unused by the import map; carried so publish checks see every field. */
@@ -320,3 +328,30 @@ export const isRepairable = (problems: readonly Problem[]): boolean =>
   problems.every(
     ({ kind }) => kind !== 'unbacked-import' && kind !== 'inexpressible-range'
   );
+
+/** A deno.json as parsed, narrowed only where this module reads it. */
+export interface DenoFields {
+  readonly [field: string]: unknown;
+  readonly version?: string;
+}
+
+/**
+ * The deno.json a manifest implies: every field the tool does not understand is
+ * carried through untouched, and the two generated ones are overwritten in
+ * place, so regenerating never reorders or drops a hand-written field.
+ */
+export const projectDenoConfig = (
+  config: DenoFields,
+  manifest: PackageManifest,
+  imports: ImportMap
+): Record<string, unknown> => ({
+  ...config,
+  version: manifest.version,
+  imports,
+});
+
+/** Whether deno.json still states the version package.json was released at. */
+export const isVersionCurrent = (
+  config: DenoFields,
+  manifest: PackageManifest
+): boolean => config.version === manifest.version;

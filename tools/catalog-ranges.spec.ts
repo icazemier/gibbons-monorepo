@@ -26,7 +26,11 @@ describe('resolveCatalogRanges', () => {
 
   it('reports a stale range and supplies the catalog value', () => {
     const { fields, drifts } = resolveCatalogRanges(
-      { name: 'pkg', dependencies: { [governedName]: staleRange } },
+      {
+        name: 'pkg',
+        version: '1.0.0',
+        dependencies: { [governedName]: staleRange },
+      },
       catalog
     );
     deepStrictEqual(drifts, [
@@ -42,7 +46,11 @@ describe('resolveCatalogRanges', () => {
 
   it('reports nothing when the declared range already matches', () => {
     const { drifts } = resolveCatalogRanges(
-      { name: 'pkg', dependencies: { [governedName]: governedRange } },
+      {
+        name: 'pkg',
+        version: '1.0.0',
+        dependencies: { [governedName]: governedRange },
+      },
       catalog
     );
     deepStrictEqual(drifts, []);
@@ -50,7 +58,11 @@ describe('resolveCatalogRanges', () => {
 
   it('leaves a dependency the catalog does not mention alone', () => {
     const { fields, drifts } = resolveCatalogRanges(
-      { name: 'pkg', dependencies: { 'not-in-the-catalog': staleRange } },
+      {
+        name: 'pkg',
+        version: '1.0.0',
+        dependencies: { 'not-in-the-catalog': staleRange },
+      },
       catalog
     );
     deepStrictEqual(drifts, []);
@@ -59,7 +71,11 @@ describe('resolveCatalogRanges', () => {
 
   it('governs peerDependencies too, since consumers resolve them', () => {
     const { drifts } = resolveCatalogRanges(
-      { name: 'pkg', peerDependencies: { [governedName]: staleRange } },
+      {
+        name: 'pkg',
+        version: '1.0.0',
+        peerDependencies: { [governedName]: staleRange },
+      },
       catalog
     );
     deepStrictEqual(drifts, [
@@ -76,6 +92,7 @@ describe('resolveCatalogRanges', () => {
     const { fields } = resolveCatalogRanges(
       {
         name: 'pkg',
+        version: '1.0.0',
         dependencies: {
           'not-in-the-catalog': staleRange,
           [governedName]: staleRange,
@@ -91,7 +108,11 @@ describe('resolveCatalogRanges', () => {
 
   it('ignores an empty catalog rather than blanking the manifest', () => {
     const { fields, drifts } = resolveCatalogRanges(
-      { name: 'pkg', dependencies: { [governedName]: staleRange } },
+      {
+        name: 'pkg',
+        version: '1.0.0',
+        dependencies: { [governedName]: staleRange },
+      },
       new Map()
     );
     deepStrictEqual(drifts, []);
@@ -99,7 +120,10 @@ describe('resolveCatalogRanges', () => {
   });
 
   it('handles a manifest with no dependency blocks', () => {
-    const { fields, drifts } = resolveCatalogRanges({ name: 'pkg' }, catalog);
+    const { fields, drifts } = resolveCatalogRanges(
+      { name: 'pkg', version: '1.0.0' },
+      catalog
+    );
     deepStrictEqual(drifts, []);
     deepStrictEqual(fields.dependencies, undefined);
   });

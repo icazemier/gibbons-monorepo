@@ -1,7 +1,7 @@
 {
   "name": "@icazemier/gibbons-postgresql",
   "private": false,
-  "version": "0.0.0",
+  "version": "3.0.1",
   "type": "module",
   "description": "Gibbons is a Node.js module which helps in managing user groups and user permissions with `bitwise` efficiency.",
   "contributors": [
@@ -52,8 +52,6 @@
     "fixup": "node ../../fixup.mjs",
     "clean:build": "rimraf build",
     "clean:docs": "rimraf docs",
-    "release": "semantic-release",
-    "release:dry": "semantic-release --dry-run",
     "publish:jsr": "jsr publish --allow-dirty",
     "verify:jsr": "jsr publish --dry-run --allow-dirty"
   },
@@ -85,7 +83,6 @@
     "@types/pg-cursor": "^2.7.0",
     "@types/yargs": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "conventional-changelog-conventionalcommits": "catalog:",
     "cross-env": "catalog:",
     "dotenv": "catalog:",
     "embedded-postgres": "18.3.0-beta.17",
@@ -93,8 +90,6 @@
     "noop-stream": "catalog:",
     "pg": "^8.11.0",
     "rimraf": "catalog:",
-    "semantic-release": "catalog:",
-    "semantic-release-monorepo": "catalog:",
     "typedoc": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
