@@ -1,8 +1,8 @@
 /**
  * Keeps each package's literal dependency ranges equal to the catalog.
  *
- * Published packages cannot reference the catalog directly — `npm publish`
- * ships `catalog:` verbatim and the package becomes uninstallable, which is why
+ * Published packages cannot reference the catalog directly — JSR ships without
+ * the dependency rather than resolving `catalog:`, which is why
  * `publishable-deps.ts` rejects it. Writing the versions out by hand instead
  * puts the same number in four files: two `package.json` and, downstream, two
  * `deno.json` import maps.

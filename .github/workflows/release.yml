@@ -67,61 +67,60 @@ jobs:
       - run: pnpm build
       - run: pnpm verify:pack
 
+  # Two jobs in one, chosen by whether changesets are pending.
+  #
+  # With changesets pending, the action opens (or updates) a "Version Packages"
+  # pull request carrying the version bump, the changelog and the regenerated
+  # deno.json. With none pending — which is the state right after that PR is
+  # merged — it runs the publish command instead. So a release is always two
+  # merges, and the version is reviewable before anything reaches a registry.
+  #
+  # That shape is not a preference: main and development both require a pull
+  # request, so no bot can push a version commit straight to a release branch.
   release:
-    name: Semantic Release ${{ matrix.package }}
+    name: Release
     needs: [test, lint, pack]
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      issues: write
       pull-requests: write
-      # OIDC for npm trusted publishing. `packages: write` is deliberately absent:
-      # these packages go to npmjs.com, not GitHub Packages.
+      # OIDC for trusted publishing on npm. `packages: write` is deliberately
+      # absent: these packages go to npmjs.com, not GitHub Packages.
       id-token: write
     if: "!contains(github.event.head_commit.message, 'skip ci') && !contains(github.event.head_commit.message, 'skip release')"
-    strategy:
-      # Serialize so independent package releases don't race on git tags/refs.
-      max-parallel: 1
-      matrix:
-        package: [gibbons-mongodb, gibbons-postgresql]
+    outputs:
+      published: ${{ steps.changesets.outputs.published }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-          persist-credentials: false
-      # semantic-release records which channel each released version went to in
-      # git notes, and checkout fetches branches and tags but never notes.
-      # Without them it cannot tell that an existing tag belongs to this
-      # branch's channel, so it can re-derive a version that has already
-      # shipped and then die creating a tag that exists.
-      - name: Fetch the release channel notes
-        run: git fetch origin '+refs/notes/*:refs/notes/*'
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @icazemier/${{ matrix.package }} build
-      - name: Upgrade npm for trusted publishing
-        # Pinned rather than @latest: this step runs immediately before the
-        # publish, so an unpinned fetch would put unreviewed code next to the
-        # OIDC credential.
-        run: npm install -g npm@12.0.2
-      - name: Release
+      - run: pnpm build
+      # `changeset publish` shells out to `pnpm publish` in a workspace, which
+      # reads the OIDC token itself — there is no npm to upgrade and no token to
+      # store. It needs pnpm/action-setup at v6.0.10 or newer; older releases
+      # bootstrapped a pnpm that could not see the token and failed with a 404.
+      - name: Version or publish
+        id: changesets
+        uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
+        with:
+          version: pnpm run release:version
+          publish: pnpm run release
+          title: 'chore: version packages'
+          commit: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
-          GIT_COMMITTER_NAME: github-actions[bot]
-          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
-        run: pnpm --filter @icazemier/${{ matrix.package }} run release
 
   jsr:
     name: Publish ${{ matrix.package }} to JSR
     needs: release
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, 'skip ci') && !contains(github.event.head_commit.message, 'skip release')"
+    if: "needs.release.outputs.published == 'true'"
     permissions:
       contents: read
       id-token: write
@@ -146,48 +145,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: .
-      - name: Get latest version from npm
-        id: version
-        run: |
-          BRANCH="${GITHUB_REF##*/}"
-          if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
-            TAG="latest"
-          else
-            TAG="$BRANCH"
-          fi
-          VERSION=$(npm view @icazemier/${{ matrix.package }}@"$TAG" version 2>/dev/null || echo "")
-          if [ -z "$VERSION" ]; then
-            echo "No version found on npm for dist-tag '$TAG', skipping JSR publish"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Update deno.json version
-        if: steps.version.outputs.skip != 'true'
-        env:
-          JSR_VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          node -e '
-            const fs = require("fs");
-            const deno = JSON.parse(fs.readFileSync("deno.json", "utf8"));
-            deno.version = process.env.JSR_VERSION;
-            fs.writeFileSync("deno.json", JSON.stringify(deno, null, 2) + "\n");
-          '
+      # No version lookup: deno.json carries the version the release just
+      # published, because it is generated from package.json and lint fails when
+      # the two disagree. `jsr publish` skips a version it already has, so a
+      # package that got no release this run simply does nothing here.
       - name: Publish to JSR
-        if: steps.version.outputs.skip != 'true'
-        # jsr is a pinned devDependency invoked through a script, so it comes out
-        # of the lockfile with an integrity hash. `npx` resolved it fresh from the
-        # registry on every run, which put an unverified download next to an OIDC
-        # publishing token. `--allow-dirty` is required because the deno.json
-        # version is written above.
         run: pnpm run publish:jsr
 
   # A release cut from main is tagged on main's own commit, and nothing brings
-  # that commit back. development then cannot see that the version shipped, so
-  # its beta channel re-derives a version whose tag already exists and the
-  # release dies at `git tag`. That is not hypothetical: it is how
-  # gibbons-postgresql 3.0.1 broke this pipeline.
+  # that commit back. development then still believes the old version is current
+  # and computes its next beta from it, re-deriving a version that has already
+  # shipped. That is not hypothetical: it is how gibbons-postgresql 3.0.1 broke
+  # this pipeline under semantic-release, and changesets reads the same history
+  # through package.json instead of through tags.
   #
   # GitFlow's answer is the back-merge, so it happens here rather than by
   # remembering. development requires a pull request, so this opens one.
@@ -218,10 +188,14 @@ jobs:
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git checkout -B "$BRANCH" origin/development
           if ! git merge --no-ff origin/main -m 'chore: back-merge main into development'; then
-            echo "::error::main does not merge cleanly into development. Resolve it by hand; until then every release tag cut on main stays invisible to the beta channel."
+            echo "::error::main does not merge cleanly into development. Resolve it by hand; until then every release cut on main stays invisible to the beta channel."
             exit 1
           fi
-          git push --force-with-lease origin "$BRANCH"
+          # Plain --force, not --force-with-lease: nothing fetched this branch,
+          # so there is no remote-tracking ref for a lease to compare against and
+          # it rejects the push the moment the branch already exists from an
+          # earlier release. The branch is disposable and only this job writes it.
+          git push --force origin "$BRANCH"
           open=$(gh pr list --head "$BRANCH" --base development --state open --json number --jq '.[].number')
           if [ -n "$open" ]; then
             echo "pull request #$open already open for $BRANCH"
@@ -229,4 +203,4 @@ jobs:
           fi
           gh pr create --base development --head "$BRANCH" \
             --title 'Back-merge main into development' \
-            --body 'Carries the release commits and their tags from main back to development, so the beta channel can see which versions have already shipped. Opened by the Release workflow.'
+            --body 'Carries the release commits from main back to development, so the beta channel computes its next version from what has actually shipped. Opened by the Release workflow.'

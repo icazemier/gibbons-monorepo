@@ -7,6 +7,7 @@ describe('findUnpublishableRanges', () => {
     deepStrictEqual(
       findUnpublishableRanges({
         name: '@icazemier/gibbons-mongodb',
+        version: '1.0.0',
         dependencies: {
           '@icazemier/gibbons': 'catalog:',
           cosmiconfig: 'catalog:',
@@ -29,6 +30,7 @@ describe('findUnpublishableRanges', () => {
     deepStrictEqual(
       findUnpublishableRanges({
         name: 'pkg',
+        version: '1.0.0',
         dependencies: { cosmiconfig: '^10.0.0', 'pg-cursor': '^2.21.0' },
         peerDependencies: { pg: '^8.11.0' },
       }),
@@ -40,6 +42,7 @@ describe('findUnpublishableRanges', () => {
     deepStrictEqual(
       findUnpublishableRanges({
         name: 'pkg',
+        version: '1.0.0',
         dependencies: { yargs: 'catalog:tooling' },
       }),
       [{ field: 'dependencies', name: 'yargs', range: 'catalog:tooling' }]
@@ -50,6 +53,7 @@ describe('findUnpublishableRanges', () => {
     deepStrictEqual(
       findUnpublishableRanges({
         name: 'pkg',
+        version: '1.0.0',
         peerDependencies: { '@icazemier/gibbons': 'workspace:^' },
       }),
       [
@@ -66,6 +70,7 @@ describe('findUnpublishableRanges', () => {
     deepStrictEqual(
       findUnpublishableRanges({
         name: 'pkg',
+        version: '1.0.0',
         optionalDependencies: { fsevents: 'catalog:' },
       }),
       [{ field: 'optionalDependencies', name: 'fsevents', range: 'catalog:' }]
@@ -76,6 +81,7 @@ describe('findUnpublishableRanges', () => {
     deepStrictEqual(
       findUnpublishableRanges({
         name: 'pkg',
+        version: '1.0.0',
         dependencies: { 'my-catalog:parser': '^1.0.0' },
       }),
       []
@@ -83,6 +89,9 @@ describe('findUnpublishableRanges', () => {
   });
 
   it('reports nothing when no published field is declared', () => {
-    deepStrictEqual(findUnpublishableRanges({ name: 'pkg' }), []);
+    deepStrictEqual(
+      findUnpublishableRanges({ name: 'pkg', version: '1.0.0' }),
+      []
+    );
   });
 });

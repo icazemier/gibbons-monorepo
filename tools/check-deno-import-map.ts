@@ -18,6 +18,8 @@ import process from 'node:process';
 import { error, log } from 'node:console';
 import {
   isRepairable,
+  isVersionCurrent,
+  projectDenoConfig,
   resolveImportMap,
   type Problem,
 } from './deno-import-map.ts';
@@ -44,7 +46,8 @@ const regenerate = async (
   files: PackageFiles,
   imports: Readonly<Record<string, string>>
 ): Promise<void> => {
-  const contents = JSON.stringify({ ...files.config, imports }, undefined, 2);
+  const projected = projectDenoConfig(files.config, files.manifest, imports);
+  const contents = JSON.stringify(projected, undefined, 2);
   await writeFile(files.denoFile, `${contents}\n`, 'utf-8');
 };
 
@@ -99,7 +102,7 @@ const run = async (): Promise<void> => {
       files.manifest
     )) {
       error(
-        `${files.manifest.name}: ${field}."${name}" is "${range}" — a pnpm-only protocol that npm publishes verbatim and consumers cannot resolve. Use a literal range.`
+        `${files.manifest.name}: ${field}."${name}" is "${range}" — a pnpm-only protocol that JSR cannot resolve, so it would publish without the dependency. Use a literal range.`
       );
       unpublishable += 1;
     }
@@ -148,13 +151,17 @@ const run = async (): Promise<void> => {
     ? await Promise.all(directories.map(readPackageFiles))
     : packages;
 
+  let stale = 0;
   for (const files of current) {
     const { imports, problems } = resolveImportMap(
       files.manifest,
       catalog,
       files.config.imports ?? {}
     );
-    if (problems.length === 0) continue;
+    // JSR publishes the version deno.json states, so a stale one republishes a
+    // version that already shipped. Regenerating fixes it whatever the map says.
+    const versionCurrent = isVersionCurrent(files.config, files.manifest);
+    if (problems.length === 0 && versionCurrent) continue;
 
     if (shouldFix && isRepairable(problems)) {
       await regenerate(files, imports);
@@ -162,9 +169,19 @@ const run = async (): Promise<void> => {
       continue;
     }
 
+    if (!versionCurrent) {
+      error(
+        `${files.manifest.name}: deno.json says version "${files.config.version ?? '(absent)'}" but package.json says "${files.manifest.version}". Run "pnpm lint:fix".`
+      );
+      stale += 1;
+    }
+    if (problems.length === 0) continue;
+
     report(files.denoFile, problems);
     unresolved += problems.length;
   }
+
+  if (stale > 0) process.exitCode = 1;
 
   if (unresolved > 0) {
     error(

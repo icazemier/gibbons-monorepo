@@ -83,3 +83,7 @@ Use [conventional commits](https://www.conventionalcommits.org/):
 - `docs:` documentation changes
 - `test:` test changes
 - `chore:` maintenance
+
+If the change is user-facing, also run `pnpm changeset` and commit the file it
+generates under `.changeset/`. See [RELEASING.md](../../../RELEASING.md) for
+how that turns into a release.

@@ -1,6 +1,6 @@
 {
   "name": "@icazemier/gibbons-mongodb",
-  "version": "0.0.0",
+  "version": "3.1.0-beta.1",
   "license": "MIT",
   "exports": "./src/index.ts",
   "exclude": [
@@ -16,9 +16,7 @@
     "tsconfig-build-cjs.json",
     "tsconfig-build-esm.json",
     "typedoc.json",
-    "vite.config.ts",
-    ".releaserc.json",
-    "SEMANTIC-VERSIONING-QUICKSTART.md"
+    "vite.config.ts"
   ],
   "imports": {
     "mongodb": "npm:mongodb@^7.0.0",
