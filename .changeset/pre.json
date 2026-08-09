@@ -1,0 +1,13 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@icazemier/gibbons-mongodb": "3.1.0-beta.1",
+    "@icazemier/gibbons-postgresql": "3.0.1"
+  },
+  "changesets": [
+    "deprecate-mutation-concurrency",
+    "mongodb-driver-7-support",
+    "mongodb-shared-session-race"
+  ]
+}
