@@ -16,7 +16,6 @@ export default defineConfig({
         'src/bin/**', // CLI tools - tested manually
         'src/interfaces/**', // Type definitions only
         'src/index.ts', // Re-exports only
-        'src/utils.ts', // Utility generator - not used in core logic
       ],
     },
   },
