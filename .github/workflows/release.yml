@@ -89,6 +89,13 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      # semantic-release records which channel each released version went to in
+      # git notes, and checkout fetches branches and tags but never notes.
+      # Without them it cannot tell that an existing tag belongs to this
+      # branch's channel, so it can re-derive a version that has already
+      # shipped and then die creating a tag that exists.
+      - name: Fetch the release channel notes
+        run: git fetch origin '+refs/notes/*:refs/notes/*'
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -173,3 +180,51 @@ jobs:
         # which would execute unreviewed code in a job holding an OIDC token.
         # `--allow-dirty` is required because the deno.json version is written above.
         run: npx --yes jsr@0.14.3 publish --allow-dirty
+
+  # A release cut from main is tagged on main's own commit, and nothing brings
+  # that commit back. development then cannot see that the version shipped, so
+  # its beta channel re-derives a version whose tag already exists and the
+  # release dies at `git tag`. That is not hypothetical: it is how
+  # gibbons-postgresql 3.0.1 broke this pipeline.
+  #
+  # GitFlow's answer is the back-merge, so it happens here rather than by
+  # remembering. development requires a pull request, so this opens one.
+  backmerge:
+    name: Keep development in step with main
+    needs: release
+    if: "github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'skip ci') && !contains(github.event.head_commit.message, 'skip release')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Open a back-merge pull request when development is behind
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: chore/backmerge-main
+        run: |
+          set -euo pipefail
+          git fetch origin main development
+          if git merge-base --is-ancestor origin/main origin/development; then
+            echo "development already contains main; nothing to back-merge"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -B "$BRANCH" origin/development
+          if ! git merge --no-ff origin/main -m 'chore: back-merge main into development'; then
+            echo "::error::main does not merge cleanly into development. Resolve it by hand; until then every release tag cut on main stays invisible to the beta channel."
+            exit 1
+          fi
+          git push --force-with-lease origin "$BRANCH"
+          open=$(gh pr list --head "$BRANCH" --base development --state open --json number --jq '.[].number')
+          if [ -n "$open" ]; then
+            echo "pull request #$open already open for $BRANCH"
+            exit 0
+          fi
+          gh pr create --base development --head "$BRANCH" \
+            --title 'Back-merge main into development' \
+            --body 'Carries the release commits and their tags from main back to development, so the beta channel can see which versions have already shipped. Opened by the Release workflow.'
