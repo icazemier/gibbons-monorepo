@@ -670,11 +670,22 @@ export class GibbonsMongoDb implements IPermissionsResource {
       const groupsGibbon = this.gibbonGroup.ensureGibbon(groups);
       const permissionGibbon = this.gibbonPermission.ensureGibbon(permissions);
 
-      // Validate to ensure groups and permissions are allocated
-      const [permissionsValid, groupsValid] = await Promise.all([
-        this.gibbonPermission.validate(permissionGibbon, true, s),
-        this.gibbonGroup.validate(groupsGibbon, true, s),
-      ]);
+      // Validate to ensure groups and permissions are allocated.
+      //
+      // Sequential on purpose: a ClientSession carries the transaction state and
+      // may only serve one operation at a time. Running these two concurrently
+      // makes both commands claim `startTransaction: true` for the same
+      // txnNumber, which the server rejects with ConflictingOperationInProgress.
+      const permissionsValid = await this.gibbonPermission.validate(
+        permissionGibbon,
+        true,
+        s
+      );
+      const groupsValid = await this.gibbonGroup.validate(
+        groupsGibbon,
+        true,
+        s
+      );
 
       if (!permissionsValid) {
         throw new Error(

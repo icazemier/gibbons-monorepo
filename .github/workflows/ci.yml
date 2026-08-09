@@ -81,6 +81,30 @@ jobs:
       - run: pnpm --filter @icazemier/${{ matrix.package }} build
       - run: pnpm --filter @icazemier/${{ matrix.package }} test
 
+  # The suite above runs on the driver the devDependency pins, which is the
+  # newest major the peer range allows. Both ends of that range have to work,
+  # and only one of them is exercised by default: driver 6 tolerated concurrent
+  # operations on a shared session where driver 7 rejects them, so a difference
+  # between the two is a real thing that has already bitten. One job on one Node
+  # version is enough to catch it — the matrix above covers everything else.
+  oldest-driver:
+    name: Test gibbons-mongodb on the oldest supported mongodb driver
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.x
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      # Rewrites the manifest and lockfile in the runner, which is a throwaway
+      # checkout. Nothing is committed from here.
+      - name: Install the driver from the bottom of the peer range
+        run: pnpm --filter @icazemier/gibbons-mongodb add --save-dev mongodb@^6.0.0
+      - run: pnpm --filter @icazemier/gibbons-mongodb test
+
   bun:
     name: Run ${{ matrix.package }} on Bun
     if: "!contains(github.event.head_commit.message, 'skip ci')"

@@ -168,7 +168,7 @@ const run = async (): Promise<void> => {
 
   if (unresolved > 0) {
     error(
-      `\n${String(unresolved)} import map problem(s). "pnpm lint:fix" regenerates stale and missing entries; an unbacked-import needs the dependency added to package.json, or the import removed.`
+      `\n${String(unresolved)} import map problem(s). "pnpm lint:fix" regenerates stale and missing entries; an unbacked-import needs the dependency added to package.json, or the import removed; an inexpressible-range needs package.json to state a range Deno parses, such as "^7.0.0" rather than ">=6.0.0 <8.0.0".`
     );
     process.exitCode = 1;
   }

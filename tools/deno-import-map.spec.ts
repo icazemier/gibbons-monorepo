@@ -4,6 +4,7 @@ import { readdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  denoResolvableRange,
   formatNpmSpecifier,
   isRepairable,
   parseCatalog,
@@ -324,7 +325,7 @@ describe('resolveImportMap', () => {
     assert.equal(imports.vitest, 'npm:vitest@^4.1.10');
   });
 
-  it('adopts a widened peer range verbatim', () => {
+  it('collapses a widened peer range to the newest major Deno can parse', () => {
     const widened: PackageManifest = {
       ...manifest,
       peerDependencies: { mongodb: '^6.0.0 || ^7.0.0' },
@@ -332,7 +333,59 @@ describe('resolveImportMap', () => {
 
     const { imports } = resolveImportMap(widened, catalog, inSync);
 
-    assert.equal(imports.mongodb, 'npm:mongodb@^6.0.0 || ^7.0.0');
+    assert.equal(imports.mongodb, 'npm:mongodb@^7.0.0');
+  });
+
+  it('collapses a union written newest-first the same way', () => {
+    const widened: PackageManifest = {
+      ...manifest,
+      peerDependencies: { mongodb: '^7.0.0 || ^6.0.0' },
+    };
+
+    const { imports } = resolveImportMap(widened, catalog, inSync);
+
+    assert.equal(imports.mongodb, 'npm:mongodb@^7.0.0');
+  });
+
+  it('leaves a comparator range alone, because Deno cannot parse one', () => {
+    const comparators: PackageManifest = {
+      ...manifest,
+      peerDependencies: { mongodb: '>=6.0.0 <8.0.0' },
+    };
+
+    const { imports, problems } = resolveImportMap(
+      comparators,
+      catalog,
+      inSync
+    );
+
+    assert.deepEqual(
+      problems.map(({ kind }) => kind),
+      ['inexpressible-range']
+    );
+    assert.equal(imports.mongodb, inSync.mongodb);
+  });
+
+  it('reports a missing entry it cannot express rather than writing one', () => {
+    const comparators: PackageManifest = {
+      ...manifest,
+      peerDependencies: { mongodb: '>=6.0.0 <8.0.0' },
+    };
+    const withoutMongodb = Object.fromEntries(
+      Object.entries(inSync).filter(([alias]) => alias !== 'mongodb')
+    );
+
+    const { imports, problems } = resolveImportMap(
+      comparators,
+      catalog,
+      withoutMongodb
+    );
+
+    assert.deepEqual(
+      problems.map(({ kind }) => kind),
+      ['inexpressible-range']
+    );
+    assert.equal(imports.mongodb, undefined);
   });
 
   it('supplies a range for an entry that carries none', () => {
@@ -396,6 +449,35 @@ describe('isRepairable', () => {
       isRepairable([{ alias: 'a', kind: 'unbacked-import', detail: '' }]),
       false
     );
+  });
+
+  it('is false for a range no import map can state', () => {
+    assert.equal(
+      isRepairable([{ alias: 'a', kind: 'inexpressible-range', detail: '' }]),
+      false
+    );
+  });
+});
+
+describe('denoResolvableRange', () => {
+  it('keeps a range Deno already parses', () => {
+    assert.equal(denoResolvableRange('^6.0.0'), '^6.0.0');
+    assert.equal(denoResolvableRange('~6.1'), '~6.1');
+    assert.equal(denoResolvableRange('6.x'), '6.x');
+    assert.equal(denoResolvableRange('17.7.2'), '17.7.2');
+  });
+
+  it('picks the newest major out of a union', () => {
+    assert.equal(denoResolvableRange('^6.0.0 || ^7.0.0'), '^7.0.0');
+    assert.equal(denoResolvableRange('^8.0.0 || ^9.0.0 || ^10.0.0'), '^10.0.0');
+  });
+
+  it('rejects the forms Deno fails to parse', () => {
+    assert.equal(denoResolvableRange('>=6.0.0'), null);
+    assert.equal(denoResolvableRange('>=6.0.0 <8.0.0'), null);
+    assert.equal(denoResolvableRange('6 - 7'), null);
+    assert.equal(denoResolvableRange('*'), null);
+    assert.equal(denoResolvableRange('workspace:*'), null);
   });
 });
 
