@@ -170,7 +170,7 @@ jobs:
         run: |
           set -o pipefail
           log="$RUNNER_TEMP/jsr-dry-run.log"
-          npx --yes jsr@0.14.3 publish --dry-run --allow-dirty 2>&1 | tee "$log"
+          pnpm run verify:jsr 2>&1 | tee "$log"
           if grep -q 'failed to resolve' "$log"; then
             echo "::error::jsr could not resolve a package.json dependency, so it would be dropped from the published package. Run 'pnpm lint:fix' and commit deno.json."
             exit 1
