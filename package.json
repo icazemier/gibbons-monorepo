@@ -11,6 +11,7 @@
     "test": "pnpm run test:tools && pnpm -r run test",
     "test:tools": "node --test tools/*.spec.ts",
     "verify:pack": "node tools/verify-package-install.ts",
+    "verify:published": "node tools/verify-published.ts",
     "typecheck": "tsc --noEmit",
     "lint": "pnpm run typecheck && node tools/check-deno-import-map.ts && eslint .",
     "lint:fix": "node tools/check-deno-import-map.ts --fix && eslint . --fix",
