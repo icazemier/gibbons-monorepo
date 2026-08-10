@@ -63,7 +63,7 @@ This gives you up to 1024 permissions (128 × 8) and 1024 groups.
 ### 2. Initialize the database
 
 ```bash
-npx gibbons-postgresql init --uri=postgresql://localhost:5432/myapp
+gibbons-postgresql init --uri=postgresql://localhost:5432/myapp
 ```
 
 Or programmatically:
@@ -209,13 +209,13 @@ const users = await gibbons.findUsersByGroups([1, 2]).toArray();
 
 ```bash
 # Initialize database (creates tables, installs helper function, seeds slots)
-npx gibbons-postgresql init --uri=postgresql://localhost:5432/myapp
+gibbons-postgresql init --uri=postgresql://localhost:5432/myapp
 
 # Use a custom config file
-npx gibbons-postgresql init --uri=postgresql://localhost:5432/myapp --config=./my-config.json
+gibbons-postgresql init --uri=postgresql://localhost:5432/myapp --config=./my-config.json
 
 # Skip schema creation (when Prisma/Drizzle/Flyway already created the tables)
-npx gibbons-postgresql init --uri=postgresql://localhost:5432/myapp --skip-schema
+gibbons-postgresql init --uri=postgresql://localhost:5432/myapp --skip-schema
 ```
 
 ## Configuration

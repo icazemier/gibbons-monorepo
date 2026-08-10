@@ -71,7 +71,7 @@ npm install @icazemier/gibbons-mongodb mongodb
 ### 2. Seed the database
 
 ```bash
-npx gibbons-mongodb init --uri mongodb://localhost:27017
+gibbons-mongodb init --uri mongodb://localhost:27017
 ```
 
 This creates pre-allocated permission and group slots. With 256 bytes you get 2,048 slots each.
