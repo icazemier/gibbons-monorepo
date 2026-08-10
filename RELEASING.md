@@ -43,24 +43,29 @@ Pick the bump by what it does to a consumer:
 
 ## How a release happens
 
-Merging into `development` or `main` starts the Release workflow, and a release
-takes **two merges**:
+Merge, and it releases. That is the whole flow.
 
-1. The workflow sees pending changesets and opens a **`chore: version packages`**
-   pull request. It carries the new version, the generated `CHANGELOG.md` and
-   the regenerated `deno.json`. Read the version in that PR — it is the release
-   you are about to cut.
-2. Merging that PR starts the workflow again. With no changesets left it
-   publishes instead: npm first, then JSR, then a GitHub release and tag.
+Merging into `development` or `main` starts the Release workflow. After the
+tests, lint and the consumer-install check pass, it consumes any pending
+changesets into the version, the changelog, the lockfile and `deno.json`,
+commits that bump to the branch, and publishes: npm first, then JSR, then a
+GitHub release and tag. A merge carrying no changesets publishes nothing, which
+is the right outcome for a change with nothing user-facing in it.
 
-Two merges rather than one is not a workaround. `main` and `development` both
-require pull requests, so nothing can push a version commit straight to a
-release branch — and it means the version is reviewable before it exists
-anywhere public.
+A release cut on `main` is back-merged into `development` automatically, so the
+beta channel computes its next version from what has actually shipped.
 
-A release cut on `main` is followed by an automatic **back-merge** pull request
-into `development`. Merge it. Until it lands, `development` still believes the
-old version is current and will compute its next beta from it.
+You will see two short-lived pull requests go by, `chore: version packages` and
+`chore: back-merge main into development`. **Ignore them.** The workflow opens
+and merges each one itself; they exist only because the `Release branches`
+ruleset requires changes to arrive by pull request, and nothing here can bypass
+that — GitHub only accepts the Actions app as a bypass actor on
+organisation-owned repositories, and this one belongs to a user.
+
+That constraint is also why publishing happens inside the same run as the
+version bump rather than being triggered by the merge: merges made with
+`GITHUB_TOKEN` deliberately start no workflow run. The same property is what
+stops a release from re-triggering itself.
 
 ## Publishing credentials
 
