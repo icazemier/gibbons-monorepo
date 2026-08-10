@@ -32,7 +32,7 @@ export interface PackageFiles {
   readonly config: DenoConfig;
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
+export const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const toStringRecord = (value: unknown, origin: string): DependencyRanges => {

@@ -166,11 +166,11 @@ jobs:
     name: Publish to JSR
     needs: release
     runs-on: ubuntu-latest
-    # A dispatch is also allowed through, because `jsr publish` skips a version
-    # it already has (see below) and so this job is safe to run at any time. That
-    # makes it the recovery lever when a publish fails after npm already went
-    # out: nothing else can push a missed version to JSR.
-    if: "needs.release.outputs.published == 'true' || github.event_name == 'workflow_dispatch'"
+    # Deliberately not gated on "did npm publish this run", matching the sibling
+    # repos. Both publishes are idempotent, so running every time lets a registry
+    # that fell behind catch up on its own. The gate that used to be here is what
+    # turned the 3.1.0 JSR failure into a manual recovery: npm had shipped, no
+    # changesets were left pending, and so nothing could reach JSR again.
     permissions:
       contents: read
       id-token: write
@@ -202,6 +202,13 @@ jobs:
       # packages published in the same run.
       - name: Publish to JSR
         run: pnpm -r --workspace-concurrency=1 run publish:jsr
+
+      # `jsr publish` exits 0 when it skips an already-published version, and so
+      # does npm, so a green publish step never proved anything shipped. Both
+      # registries are asserted to actually serve every package's version before
+      # the run is called a success — which is what 3.1.0 needed and lacked.
+      - name: Verify both registries serve every version
+        run: pnpm verify:published
 
   # A release cut from main is tagged on main's own commit, and nothing brings
   # that commit back. development then still believes the old version is current
