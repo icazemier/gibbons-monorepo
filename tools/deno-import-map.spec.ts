@@ -4,12 +4,17 @@ import { readdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  denoResolvableRange,
   formatNpmSpecifier,
   isRepairable,
+  isVersionCurrent,
   parseCatalog,
   parseNpmSpecifier,
+  projectDenoConfig,
   resolveDeclaredRange,
   resolveImportMap,
+  type DenoFields,
+  type ImportMap,
   type PackageManifest,
 } from './deno-import-map.ts';
 import { readCatalog, readPackageFiles } from './package-files.ts';
@@ -158,6 +163,7 @@ describe('resolveDeclaredRange', () => {
   it('follows catalog: into the workspace catalog', () => {
     const manifest: PackageManifest = {
       name: 'pkg',
+      version: '1.0.0',
       dependencies: { cosmiconfig: 'catalog:' },
     };
 
@@ -170,6 +176,7 @@ describe('resolveDeclaredRange', () => {
   it('returns a literal range unchanged', () => {
     const manifest: PackageManifest = {
       name: 'pkg',
+      version: '1.0.0',
       dependencies: { 'pg-cursor': '^2.21.0' },
     };
 
@@ -182,6 +189,7 @@ describe('resolveDeclaredRange', () => {
   it('reads peerDependencies when the name is not a dependency', () => {
     const manifest: PackageManifest = {
       name: 'pkg',
+      version: '1.0.0',
       peerDependencies: { mongodb: '^6.0.0' },
     };
 
@@ -191,6 +199,7 @@ describe('resolveDeclaredRange', () => {
   it('prefers dependencies over peerDependencies', () => {
     const manifest: PackageManifest = {
       name: 'pkg',
+      version: '1.0.0',
       dependencies: { pg: '^8.11.0' },
       peerDependencies: { pg: '^7.0.0' },
     };
@@ -200,7 +209,11 @@ describe('resolveDeclaredRange', () => {
 
   it('is undefined for a name the manifest never declares', () => {
     assert.equal(
-      resolveDeclaredRange({ name: 'pkg' }, catalog, 'vitest'),
+      resolveDeclaredRange(
+        { name: 'pkg', version: '1.0.0' },
+        catalog,
+        'vitest'
+      ),
       undefined
     );
   });
@@ -208,6 +221,7 @@ describe('resolveDeclaredRange', () => {
   it('throws when catalog: names an entry the catalog lacks', () => {
     const manifest: PackageManifest = {
       name: 'pkg',
+      version: '1.0.0',
       dependencies: { yargs: 'catalog:' },
     };
 
@@ -220,6 +234,7 @@ describe('resolveDeclaredRange', () => {
   it('refuses a named catalog rather than resolving it wrongly', () => {
     const manifest: PackageManifest = {
       name: 'pkg',
+      version: '1.0.0',
       dependencies: { cosmiconfig: 'catalog:tooling' },
     };
 
@@ -235,6 +250,7 @@ describe('resolveImportMap', () => {
 
   const manifest: PackageManifest = {
     name: '@icazemier/gibbons-mongodb',
+    version: '1.0.0',
     dependencies: { cosmiconfig: 'catalog:', yargs: 'catalog:' },
     peerDependencies: { mongodb: '^6.0.0' },
   };
@@ -324,7 +340,7 @@ describe('resolveImportMap', () => {
     assert.equal(imports.vitest, 'npm:vitest@^4.1.10');
   });
 
-  it('adopts a widened peer range verbatim', () => {
+  it('collapses a widened peer range to the newest major Deno can parse', () => {
     const widened: PackageManifest = {
       ...manifest,
       peerDependencies: { mongodb: '^6.0.0 || ^7.0.0' },
@@ -332,7 +348,59 @@ describe('resolveImportMap', () => {
 
     const { imports } = resolveImportMap(widened, catalog, inSync);
 
-    assert.equal(imports.mongodb, 'npm:mongodb@^6.0.0 || ^7.0.0');
+    assert.equal(imports.mongodb, 'npm:mongodb@^7.0.0');
+  });
+
+  it('collapses a union written newest-first the same way', () => {
+    const widened: PackageManifest = {
+      ...manifest,
+      peerDependencies: { mongodb: '^7.0.0 || ^6.0.0' },
+    };
+
+    const { imports } = resolveImportMap(widened, catalog, inSync);
+
+    assert.equal(imports.mongodb, 'npm:mongodb@^7.0.0');
+  });
+
+  it('leaves a comparator range alone, because Deno cannot parse one', () => {
+    const comparators: PackageManifest = {
+      ...manifest,
+      peerDependencies: { mongodb: '>=6.0.0 <8.0.0' },
+    };
+
+    const { imports, problems } = resolveImportMap(
+      comparators,
+      catalog,
+      inSync
+    );
+
+    assert.deepEqual(
+      problems.map(({ kind }) => kind),
+      ['inexpressible-range']
+    );
+    assert.equal(imports.mongodb, inSync.mongodb);
+  });
+
+  it('reports a missing entry it cannot express rather than writing one', () => {
+    const comparators: PackageManifest = {
+      ...manifest,
+      peerDependencies: { mongodb: '>=6.0.0 <8.0.0' },
+    };
+    const withoutMongodb = Object.fromEntries(
+      Object.entries(inSync).filter(([alias]) => alias !== 'mongodb')
+    );
+
+    const { imports, problems } = resolveImportMap(
+      comparators,
+      catalog,
+      withoutMongodb
+    );
+
+    assert.deepEqual(
+      problems.map(({ kind }) => kind),
+      ['inexpressible-range']
+    );
+    assert.equal(imports.mongodb, undefined);
   });
 
   it('supplies a range for an entry that carries none', () => {
@@ -396,6 +464,108 @@ describe('isRepairable', () => {
       isRepairable([{ alias: 'a', kind: 'unbacked-import', detail: '' }]),
       false
     );
+  });
+
+  it('is false for a range no import map can state', () => {
+    assert.equal(
+      isRepairable([{ alias: 'a', kind: 'inexpressible-range', detail: '' }]),
+      false
+    );
+  });
+});
+
+describe('denoResolvableRange', () => {
+  it('keeps a range Deno already parses', () => {
+    assert.equal(denoResolvableRange('^6.0.0'), '^6.0.0');
+    assert.equal(denoResolvableRange('~6.1'), '~6.1');
+    assert.equal(denoResolvableRange('6.x'), '6.x');
+    assert.equal(denoResolvableRange('17.7.2'), '17.7.2');
+  });
+
+  it('picks the newest major out of a union', () => {
+    assert.equal(denoResolvableRange('^6.0.0 || ^7.0.0'), '^7.0.0');
+    assert.equal(denoResolvableRange('^8.0.0 || ^9.0.0 || ^10.0.0'), '^10.0.0');
+  });
+
+  it('rejects the forms Deno fails to parse', () => {
+    assert.equal(denoResolvableRange('>=6.0.0'), null);
+    assert.equal(denoResolvableRange('>=6.0.0 <8.0.0'), null);
+    assert.equal(denoResolvableRange('6 - 7'), null);
+    assert.equal(denoResolvableRange('*'), null);
+    assert.equal(denoResolvableRange('workspace:*'), null);
+  });
+});
+
+describe('projectDenoConfig', () => {
+  const manifest: PackageManifest = { name: 'pkg', version: '2.0.0' };
+  const imports: ImportMap = { yargs: 'npm:yargs@^17.7.2' };
+
+  it("writes the manifest's version into the config, replacing what was there", () => {
+    const config: DenoFields = { version: '1.0.0' };
+
+    const result = projectDenoConfig(config, manifest, imports);
+
+    assert.equal(result.version, '2.0.0');
+  });
+
+  it('replaces the imports wholesale with the ones given', () => {
+    const config: DenoFields = {
+      imports: { old: 'npm:old@^1.0.0' },
+    };
+
+    const result = projectDenoConfig(config, manifest, imports);
+
+    assert.deepEqual(result.imports, imports);
+  });
+
+  it('preserves unrelated hand-written fields untouched', () => {
+    const config: DenoFields = {
+      name: 'pkg',
+      license: 'MIT',
+      exports: './mod.ts',
+      exclude: ['dist'],
+    };
+
+    const result = projectDenoConfig(config, manifest, imports);
+
+    assert.equal(result.name, 'pkg');
+    assert.equal(result.license, 'MIT');
+    assert.equal(result.exports, './mod.ts');
+    assert.deepEqual(result.exclude, ['dist']);
+  });
+
+  it('keeps the original key order when the config already had version and imports', () => {
+    const config: DenoFields = {
+      name: 'pkg',
+      version: '1.0.0',
+      exports: './mod.ts',
+      imports: { old: 'npm:old@^1.0.0' },
+    };
+
+    const result = projectDenoConfig(config, manifest, imports);
+
+    assert.deepEqual(Object.keys(result), [
+      'name',
+      'version',
+      'exports',
+      'imports',
+    ]);
+  });
+});
+
+describe('isVersionCurrent', () => {
+  const manifest: PackageManifest = { name: 'pkg', version: '1.2.3' };
+
+  it('is true when the two versions are equal', () => {
+    assert.equal(isVersionCurrent({ version: '1.2.3' }, manifest), true);
+  });
+
+  it('is false when they differ', () => {
+    assert.equal(isVersionCurrent({ version: '1.2.4' }, manifest), false);
+  });
+
+  it('is false when the config has no version at all', () => {
+    assert.equal(isVersionCurrent({}, manifest), false);
   });
 });
 

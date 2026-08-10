@@ -18,7 +18,6 @@ async function main() {
     dbName: 'my_custom_db',
     permissionByteLength: 128,
     groupByteLength: 128,
-    mongoDbMutationConcurrency: 5,
     dbStructure: {
       user: { collectionName: 'users' },
       group: { collectionName: 'groups' },

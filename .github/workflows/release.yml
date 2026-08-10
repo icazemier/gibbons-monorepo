@@ -35,6 +35,7 @@ jobs:
       - run: pnpm --filter @icazemier/${{ matrix.package }} test
 
   lint:
+    name: Lint
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, 'skip ci') && !contains(github.event.head_commit.message, 'skip release')"
     steps:
@@ -67,67 +68,115 @@ jobs:
       - run: pnpm build
       - run: pnpm verify:pack
 
+  # Versioning happens in place and publishing follows in the same run, so a
+  # merge into a release branch is the whole release. `development` publishes
+  # the beta channel, `main` publishes latest, and which one is decided from the
+  # branch by tools/apply-pre-mode.ts.
+  #
+  # The version commit still travels through a pull request, because the
+  # `Release branches` ruleset requires one and nothing here can bypass it: that
+  # bypass only accepts the GitHub Actions app on organisation-owned repos, and
+  # this repo belongs to a user. So the job opens that pull request and merges it
+  # itself. Nobody is asked to click anything — it exists to satisfy the rule,
+  # not to be reviewed.
+  #
+  # Publishing therefore has to happen in THIS run. The merge is made with
+  # GITHUB_TOKEN, and GitHub deliberately starts no workflow run for those, so
+  # waiting for the merge to trigger a release would wait forever. The same
+  # property is what stops this job from looping.
   release:
-    name: Semantic Release ${{ matrix.package }}
+    name: Release
     needs: [test, lint, pack]
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      issues: write
       pull-requests: write
-      # OIDC for npm trusted publishing. `packages: write` is deliberately absent:
-      # these packages go to npmjs.com, not GitHub Packages.
+      # OIDC for trusted publishing on npm. `packages: write` is deliberately
+      # absent: these packages go to npmjs.com, not GitHub Packages.
       id-token: write
     if: "!contains(github.event.head_commit.message, 'skip ci') && !contains(github.event.head_commit.message, 'skip release')"
-    strategy:
-      # Serialize so independent package releases don't race on git tags/refs.
-      max-parallel: 1
-      matrix:
-        package: [gibbons-mongodb, gibbons-postgresql]
+    outputs:
+      published: ${{ steps.changesets.outputs.published }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-          persist-credentials: false
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @icazemier/${{ matrix.package }} build
-      - name: Upgrade npm for trusted publishing
-        # Pinned rather than @latest: this step runs immediately before the
-        # publish, so an unpinned fetch would put unreviewed code next to the
-        # OIDC credential.
-        run: npm install -g npm@12.0.2
-      - name: Release
+      - run: pnpm build
+
+      # Consumes any pending changesets into the version, the changelog, the
+      # lockfile and deno.json. Does nothing when none are pending, which is the
+      # correct outcome for a merge that changed no published behaviour.
+      - name: Apply pending changesets
+        run: pnpm run release:version
+
+      # Lands the bump on the release branch through a pull request the job
+      # merges itself, then brings the result back into the working tree so the
+      # publish below sees the versions that were actually committed.
+      - name: Land the version bump
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: changeset-release/${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          if git diff --quiet; then
+            echo "no pending changesets; nothing to version"
+            exit 0
+          fi
+
+          git checkout -B "$BRANCH"
+          git add -A
+          git commit -m 'chore: version packages'
+          git push --force origin "$BRANCH"
+
+          gh pr create --base "$GITHUB_REF_NAME" --head "$BRANCH" \
+            --title 'chore: version packages' \
+            --body 'Applies pending changesets. Opened and merged by the Release workflow, which then publishes in the same run — the ruleset requires a pull request, so this is how the bump reaches the branch.'
+          gh pr merge "$BRANCH" --merge --delete-branch
+
+          git checkout "$GITHUB_REF_NAME"
+          git pull --ff-only origin "$GITHUB_REF_NAME"
+
+      # Publishes whatever is now unpublished, then tags it and cuts the GitHub
+      # release. `changeset publish` shells out to `pnpm publish` in a workspace,
+      # which reads the OIDC token itself — there is no npm to upgrade and no
+      # token to store. It needs pnpm/action-setup at v6.0.10 or newer; older
+      # releases bootstrapped a pnpm that could not see the token and 404'd.
+      - name: Publish
+        id: changesets
+        uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
+        with:
+          publish: pnpm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
-          GIT_COMMITTER_NAME: github-actions[bot]
-          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
-        run: pnpm --filter @icazemier/${{ matrix.package }} run release
 
+  # The registry's counterpart to the release job above: one job publishing the
+  # whole workspace, not one per package. `changeset publish` reaches every
+  # package by itself and `pnpm -r` is how the same is said to `jsr publish`,
+  # which only ever looks at the directory it runs in.
   jsr:
-    name: Publish ${{ matrix.package }} to JSR
+    name: Publish to JSR
     needs: release
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, 'skip ci') && !contains(github.event.head_commit.message, 'skip release')"
+    if: "needs.release.outputs.published == 'true'"
     permissions:
       contents: read
       id-token: write
-    strategy:
-      fail-fast: false
-      matrix:
-        package: [gibbons-mongodb, gibbons-postgresql]
-    defaults:
-      run:
-        working-directory: packages/${{ matrix.package }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # The release job commits the version bump during this run, so the
+          # triggering commit still carries the previous version. Check out the
+          # branch tip instead, or JSR republishes the version already released.
+          ref: ${{ github.ref_name }}
           # This job runs `jsr` (third-party code) while holding an OIDC token;
           # don't also leave GITHUB_TOKEN behind in .git/config for it to read.
           persist-credentials: false
@@ -136,40 +185,59 @@ jobs:
         with:
           node-version: 24
           cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: .
-      - name: Get latest version from npm
-        id: version
-        run: |
-          BRANCH="${GITHUB_REF##*/}"
-          if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
-            TAG="latest"
-          else
-            TAG="$BRANCH"
-          fi
-          VERSION=$(npm view @icazemier/${{ matrix.package }}@"$TAG" version 2>/dev/null || echo "")
-          if [ -z "$VERSION" ]; then
-            echo "No version found on npm for dist-tag '$TAG', skipping JSR publish"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Update deno.json version
-        if: steps.version.outputs.skip != 'true'
-        env:
-          JSR_VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          node -e '
-            const fs = require("fs");
-            const deno = JSON.parse(fs.readFileSync("deno.json", "utf8"));
-            deno.version = process.env.JSR_VERSION;
-            fs.writeFileSync("deno.json", JSON.stringify(deno, null, 2) + "\n");
-          '
+      - run: pnpm install --frozen-lockfile
+      # No version lookup: deno.json carries the version the release just
+      # published, because it is generated from package.json and lint fails when
+      # the two disagree. `jsr publish` skips a version it already has, so a
+      # package that got no release this run simply does nothing here.
       - name: Publish to JSR
-        if: steps.version.outputs.skip != 'true'
-        # Version-pinned: `npx jsr` resolves fresh from the registry on every run,
-        # which would execute unreviewed code in a job holding an OIDC token.
-        # `--allow-dirty` is required because the deno.json version is written above.
-        run: npx --yes jsr@0.14.3 publish --allow-dirty
+        run: pnpm -r run publish:jsr
+
+  # A release cut from main is tagged on main's own commit, and nothing brings
+  # that commit back. development then still believes the old version is current
+  # and computes its next beta from it, re-deriving a version that has already
+  # shipped. That is not hypothetical: it is how gibbons-postgresql 3.0.1 broke
+  # this pipeline under semantic-release, and changesets reads the same history
+  # through package.json instead of through tags.
+  #
+  # GitFlow's answer is the back-merge, so it happens here rather than by
+  # remembering. Same shape as the version bump: development requires a pull
+  # request, so this opens one and merges it, rather than leaving one waiting.
+  backmerge:
+    name: Keep development in step with main
+    needs: release
+    if: "github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'skip ci') && !contains(github.event.head_commit.message, 'skip release')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Merge main into development when it is behind
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: chore/backmerge-main
+        run: |
+          set -euo pipefail
+          git fetch origin main development
+          if git merge-base --is-ancestor origin/main origin/development; then
+            echo "development already contains main; nothing to back-merge"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout -B "$BRANCH" origin/development
+          if ! git merge --no-ff origin/main -m 'chore: back-merge main into development'; then
+            echo "::error::main does not merge cleanly into development. Resolve it by hand; until then every release cut on main stays invisible to the beta channel."
+            exit 1
+          fi
+          # Plain --force: nothing fetched this branch, so a lease would have no
+          # remote-tracking ref to compare against and would reject the push the
+          # moment the branch survived an earlier release. Only this job writes it.
+          git push --force origin "$BRANCH"
+          gh pr create --base development --head "$BRANCH" \
+            --title 'chore: back-merge main into development' \
+            --body 'Carries the release commits from main back to development, so the beta channel computes its next version from what has actually shipped. Opened and merged by the Release workflow.'
+          gh pr merge "$BRANCH" --merge --delete-branch

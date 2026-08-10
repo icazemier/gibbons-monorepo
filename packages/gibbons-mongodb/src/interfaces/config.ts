@@ -31,8 +31,14 @@ export interface Config {
   permissionByteLength: number;
   /** Number of bytes for the groups Gibbon (max groups = byteLength * 8) */
   groupByteLength: number;
-  /** Concurrency limit for bulk MongoDB mutations */
-  mongoDbMutationConcurrency: number;
+  /**
+   * Concurrency limit for bulk MongoDB mutations.
+   *
+   * @deprecated Never implemented. It has been declared since the first commit
+   * in 2021 and no code has ever read it, so setting it has no effect. Optional
+   * now so configs can drop it; it goes away in the next major.
+   */
+  mongoDbMutationConcurrency?: number;
   /** Collection structure for each entity type */
   dbStructure: DbStructure;
 }

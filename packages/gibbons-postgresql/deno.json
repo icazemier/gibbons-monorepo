@@ -1,6 +1,6 @@
 {
   "name": "@icazemier/gibbons-postgresql",
-  "version": "0.0.0",
+  "version": "3.0.2-beta.0",
   "license": "MIT",
   "exports": "./src/index.ts",
   "exclude": [
@@ -16,9 +16,7 @@
     "tsconfig-build-cjs.json",
     "tsconfig-build-esm.json",
     "typedoc.json",
-    "vite.config.ts",
-    ".releaserc.json",
-    "SEMANTIC-VERSIONING-QUICKSTART.md"
+    "vite.config.ts"
   ],
   "imports": {
     "pg": "npm:pg@^8.11.0",

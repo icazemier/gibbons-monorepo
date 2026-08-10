@@ -60,7 +60,6 @@ npm install @icazemier/gibbons-mongodb mongodb
     "dbName": "myapp",
     "permissionByteLength": 256,
     "groupByteLength": 256,
-    "mongoDbMutationConcurrency": 10,
     "dbStructure": {
         "user": { "collectionName": "users" },
         "group": { "collectionName": "groups" },
@@ -201,7 +200,6 @@ Every public method accepts an optional `session` parameter. When omitted, multi
 | `dbName` | string | MongoDB database name |
 | `permissionByteLength` | number | Bytes for permissions (256 = 2,048 slots) |
 | `groupByteLength` | number | Bytes for groups (256 = 2,048 slots) |
-| `mongoDbMutationConcurrency` | number | Concurrency limit for bulk operations |
 | `dbStructure.user.collectionName` | string | User collection (can be existing) |
 | `dbStructure.group.collectionName` | string | Group collection (managed by Gibbons) |
 | `dbStructure.permission.collectionName` | string | Permission collection (managed by Gibbons) |
@@ -251,4 +249,4 @@ import map is regenerated rather than hand-edited: run `pnpm lint:fix` from the
 repo root after changing a range, and commit both files. `pnpm lint` fails when
 they disagree.
 
-This project uses [conventional commits](https://www.conventionalcommits.org/) with automated semantic versioning. See [SEMANTIC-VERSIONING-QUICKSTART.md](SEMANTIC-VERSIONING-QUICKSTART.md) for details.
+This project uses [conventional commits](https://www.conventionalcommits.org/) for commit messages. User-facing changes also need a changeset (`pnpm changeset`). See [RELEASING.md](../../RELEASING.md) for details.

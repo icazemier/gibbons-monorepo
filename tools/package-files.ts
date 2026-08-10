@@ -10,6 +10,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
   parseCatalog,
+  type DenoFields,
   type DependencyRanges,
   type ImportMap,
   type PackageManifest,
@@ -17,10 +18,9 @@ import {
 
 /**
  * A deno.json, keeping every field the tool does not understand so that
- * rewriting the import map never drops one.
+ * rewriting the generated ones never drops one.
  */
-export interface DenoConfig {
-  readonly [field: string]: unknown;
+export interface DenoConfig extends DenoFields {
   readonly imports?: ImportMap;
 }
 
@@ -65,9 +65,13 @@ export const readManifest = async (file: string): Promise<PackageManifest> => {
   if (typeof parsed.name !== 'string') {
     throw new Error(`${file}: "name" must be a string`);
   }
+  if (typeof parsed.version !== 'string') {
+    throw new Error(`${file}: "version" must be a string`);
+  }
 
   return {
     name: parsed.name,
+    version: parsed.version,
     dependencies:
       parsed.dependencies === undefined
         ? undefined
@@ -88,11 +92,17 @@ export const readManifest = async (file: string): Promise<PackageManifest> => {
 
 export const readDenoConfig = async (file: string): Promise<DenoConfig> => {
   const parsed = await readJsonObject(file);
-  if (parsed.imports === undefined) return parsed;
+  if (parsed.version !== undefined && typeof parsed.version !== 'string') {
+    throw new Error(`${file}: "version" must be a string`);
+  }
 
   return {
     ...parsed,
-    imports: toStringRecord(parsed.imports, `${file}: imports`),
+    version: parsed.version,
+    imports:
+      parsed.imports === undefined
+        ? undefined
+        : toStringRecord(parsed.imports, `${file}: imports`),
   };
 };
 

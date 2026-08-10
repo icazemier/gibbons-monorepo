@@ -160,7 +160,7 @@ Enable automatic security updates:
    ```
 3. **Make changes** and commit using conventional commits
    ```bash
-   npm run commit
+   git commit
    ```
 4. **Push to your branch**
    ```bash
@@ -215,7 +215,7 @@ If you absolutely need to bypass protection (e.g., critical hotfix):
 
 - [GitHub Branch Protection Documentation](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
 - [CODEOWNERS Documentation](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners)
-- [Semantic Versioning Guide](./SEMANTIC-VERSIONING.md)
+- [Releasing](../../../RELEASING.md)
 
 ---
 

@@ -49,7 +49,6 @@ Create a `.gibbons-mongodbrc.json` in your project root:
 {
   "permissionByteLength": 128,
   "groupByteLength": 128,
-  "mongoDbMutationConcurrency": 50,
   "dbStructure": {
     "user": {
       "dbName": "myapp",
@@ -226,7 +225,6 @@ Configuration is loaded via [cosmiconfig](https://github.com/davidtheclark/cosmi
 interface Config {
   permissionByteLength: number; // Max permissions = byteLength * 8
   groupByteLength: number; // Max groups = byteLength * 8
-  mongoDbMutationConcurrency: number;
   dbStructure: {
     user: { dbName: string; collectionName: string };
     group: { dbName: string; collectionName: string };

@@ -1,5 +1,5 @@
 /**
- * Derives each package's `deno.json` import map from its `package.json`.
+ * Derives each package's `deno.json` from its `package.json`.
  *
  * JSR cannot resolve pnpm's `catalog:` protocol. Publishing without an import
  * map does not fail: `jsr publish` reports "Ignoring failed to resolve
@@ -13,6 +13,13 @@
  * when the committed copy has drifted. `package.json` remains the only place a
  * dependency version is authored.
  *
+ * The package's own version is generated the same way and for the same reason.
+ * JSR reads it from `deno.json`, while changesets writes it only to
+ * `package.json`, so the two drift the moment a release happens. Deriving one
+ * from the other keeps a single authored version and lets `pnpm lint` catch the
+ * drift, which is otherwise invisible until JSR silently republishes or skips a
+ * version.
+ *
  * Everything exported here is pure. All filesystem and process access lives in
  * `check-deno-import-map.ts`, which keeps this testable against literals.
  */
@@ -22,6 +29,7 @@ export type DependencyRanges = Readonly<Record<string, string>>;
 
 export interface PackageManifest {
   readonly name: string;
+  readonly version: string;
   readonly dependencies?: DependencyRanges;
   readonly peerDependencies?: DependencyRanges;
   /** Unused by the import map; carried so publish checks see every field. */
@@ -45,9 +53,14 @@ export interface NpmSpecifier {
  * The kinds differ in more than wording. `stale-range` and `missing-import`
  * are both repaired by regenerating the map. `unbacked-import` cannot be:
  * an import with no backing dependency is a manifest bug, and silently
- * deleting the entry would hide it.
+ * deleting the entry would hide it. Nor can `inexpressible-range`: only the
+ * manifest can say the version in a form Deno reads.
  */
-export type ProblemKind = 'stale-range' | 'missing-import' | 'unbacked-import';
+export type ProblemKind =
+  | 'stale-range'
+  | 'missing-import'
+  | 'unbacked-import'
+  | 'inexpressible-range';
 
 export interface Problem {
   readonly alias: string;
@@ -138,6 +151,33 @@ export const parseNpmSpecifier = (specifier: string): NpmSpecifier | null => {
         range: remainder.slice(0, subpathAt),
         subpath: remainder.slice(subpathAt),
       };
+};
+
+/**
+ * The range a Deno import map can state for a dependency.
+ *
+ * Deno's npm specifiers take one simple range — `^6.0.0`, `6.x` — and reject
+ * everything wider: `npm:mongodb@^6.0.0 || ^7.0.0` fails to parse, and so does
+ * the equivalent `npm:mongodb@>=6.0.0 <8.0.0`. A package whose peer range spans
+ * two majors therefore cannot state that range to Deno at all.
+ *
+ * A union collapses to the newest major it allows, which is what a fresh
+ * consumer installs. Anything still unreadable is returned as null rather than
+ * guessed at, because a specifier Deno cannot parse takes the dependency down
+ * with it — on JSR, silently.
+ */
+export const denoResolvableRange = (range: string): string | null => {
+  const branches = range.split('||').map((branch) => branch.trim());
+
+  // Compared on the leading number rather than by semver: the branches of a
+  // union differ by major, and ordering them by hand is a trap worth removing.
+  const newest = branches.reduce((widest, branch) => {
+    const major = (candidate: string) =>
+      Number.parseInt(candidate.replace(/^\D+/, ''), 10);
+    return major(branch) > major(widest) ? branch : widest;
+  });
+
+  return /^[\^~]?\d+(\.(\d+|x)){0,2}$/.test(newest) ? newest : null;
 };
 
 export const formatNpmSpecifier = (
@@ -238,11 +278,18 @@ export const resolveImportMap = (
     }
 
     covered.add(parsed.name);
-    const expected = formatNpmSpecifier(
-      parsed.name,
-      expectedRange,
-      parsed.subpath
-    );
+    const denoRange = denoResolvableRange(expectedRange);
+    if (denoRange === null) {
+      resolved[alias] = specifier;
+      problems.push({
+        alias,
+        kind: 'inexpressible-range',
+        detail: `package.json declares ${expectedRange}, which Deno cannot parse as an npm specifier`,
+      });
+      continue;
+    }
+
+    const expected = formatNpmSpecifier(parsed.name, denoRange, parsed.subpath);
     resolved[alias] = expected;
 
     if (expected !== specifier) {
@@ -256,7 +303,16 @@ export const resolveImportMap = (
 
   for (const [name, range] of required) {
     if (covered.has(name)) continue;
-    resolved[name] = formatNpmSpecifier(name, range);
+    const denoRange = denoResolvableRange(range);
+    if (denoRange === null) {
+      problems.push({
+        alias: name,
+        kind: 'inexpressible-range',
+        detail: `is a runtime dependency declared as ${range}, which Deno cannot parse as an npm specifier`,
+      });
+      continue;
+    }
+    resolved[name] = formatNpmSpecifier(name, denoRange);
     problems.push({
       alias: name,
       kind: 'missing-import',
@@ -269,4 +325,33 @@ export const resolveImportMap = (
 
 /** Whether regenerating the map resolves every problem found. */
 export const isRepairable = (problems: readonly Problem[]): boolean =>
-  problems.every(({ kind }) => kind !== 'unbacked-import');
+  problems.every(
+    ({ kind }) => kind !== 'unbacked-import' && kind !== 'inexpressible-range'
+  );
+
+/** A deno.json as parsed, narrowed only where this module reads it. */
+export interface DenoFields {
+  readonly [field: string]: unknown;
+  readonly version?: string;
+}
+
+/**
+ * The deno.json a manifest implies: every field the tool does not understand is
+ * carried through untouched, and the two generated ones are overwritten in
+ * place, so regenerating never reorders or drops a hand-written field.
+ */
+export const projectDenoConfig = (
+  config: DenoFields,
+  manifest: PackageManifest,
+  imports: ImportMap
+): Record<string, unknown> => ({
+  ...config,
+  version: manifest.version,
+  imports,
+});
+
+/** Whether deno.json still states the version package.json was released at. */
+export const isVersionCurrent = (
+  config: DenoFields,
+  manifest: PackageManifest
+): boolean => config.version === manifest.version;

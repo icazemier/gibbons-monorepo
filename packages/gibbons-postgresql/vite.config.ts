@@ -16,7 +16,6 @@ export default defineConfig({
         'src/bin/**',
         'src/interfaces/**',
         'src/index.ts',
-        'src/utils.ts',
       ],
     },
   },

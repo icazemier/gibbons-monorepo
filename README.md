@@ -72,11 +72,12 @@ pnpm test:tools           # node --test tools/*.spec.ts
 
 ## Releases
 
-Each package releases independently via
-[`semantic-release-monorepo`](https://github.com/pmowrer/semantic-release-monorepo),
-driven by [conventional commits](https://www.conventionalcommits.org/).
-Commits are scoped to the package they touch; tags are package-prefixed
-(e.g. `@icazemier/gibbons-mongodb-v1.2.3`).
+Each package releases independently through
+[changesets](https://github.com/changesets/changesets). A user-facing change
+carries a changeset (`pnpm changeset`) describing its bump; `development`
+publishes the `beta` channel and `main` publishes `latest`.
+
+See [RELEASING.md](RELEASING.md) for the full flow.
 
 ## License
 
