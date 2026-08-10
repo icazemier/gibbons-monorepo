@@ -35,6 +35,7 @@ jobs:
       - run: pnpm --filter @icazemier/${{ matrix.package }} test
 
   lint:
+    name: Lint
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, 'skip ci') && !contains(github.event.head_commit.message, 'skip release')"
     steps:
@@ -157,21 +158,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # The registry's counterpart to the release job above: one job publishing the
+  # whole workspace, not one per package. `changeset publish` reaches every
+  # package by itself and `pnpm -r` is how the same is said to `jsr publish`,
+  # which only ever looks at the directory it runs in.
   jsr:
-    name: Publish ${{ matrix.package }} to JSR
+    name: Publish to JSR
     needs: release
     runs-on: ubuntu-latest
     if: "needs.release.outputs.published == 'true'"
     permissions:
       contents: read
       id-token: write
-    strategy:
-      fail-fast: false
-      matrix:
-        package: [gibbons-mongodb, gibbons-postgresql]
-    defaults:
-      run:
-        working-directory: packages/${{ matrix.package }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -187,15 +185,13 @@ jobs:
         with:
           node-version: 24
           cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: .
+      - run: pnpm install --frozen-lockfile
       # No version lookup: deno.json carries the version the release just
       # published, because it is generated from package.json and lint fails when
       # the two disagree. `jsr publish` skips a version it already has, so a
       # package that got no release this run simply does nothing here.
       - name: Publish to JSR
-        run: pnpm run publish:jsr
+        run: pnpm -r run publish:jsr
 
   # A release cut from main is tagged on main's own commit, and nothing brings
   # that commit back. development then still believes the old version is current
