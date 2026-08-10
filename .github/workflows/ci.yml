@@ -6,14 +6,16 @@ on:
   # got nothing. `main` and `master` are excluded because Release already runs
   # this matrix there; `development` is not, because the Bun and Deno jobs
   # below exist only here.
-  # `changeset-release/**` is excluded as well: the release workflow pushes that
-  # branch itself and merges its own version pull request in the same run, and
-  # the branch carries no code — only the version, the changelog and deno.json.
-  # There is nothing to build, and building it left an `action_required` run
-  # behind every release, because CI on a github-actions[bot] branch waits for
-  # approval under this repo's first_time_contributors policy.
+  # The two bot branches are excluded as well. The release workflow pushes both
+  # and merges its own pull request in the same run: `changeset-release/**`
+  # carries no code at all (only the version, the changelog and deno.json), and
+  # `chore/backmerge-main` carries only commits that already passed CI on the
+  # branch they came from, with the merged result built again the moment it lands
+  # on development. Building either left an `action_required` run behind every
+  # release, because CI on a github-actions[bot] branch waits for approval under
+  # this repo's first_time_contributors policy.
   push:
-    branches-ignore: [main, master, changeset-release/**]
+    branches-ignore: [main, master, changeset-release/**, chore/backmerge-main]
   # Every long-lived base, not just the integration branch. `main` is the
   # default branch, so GitHub pre-selects it for new pull requests — listing
   # only `development` here meant a pull request opened against the default
@@ -36,7 +38,7 @@ permissions:
 jobs:
   lint:
     name: Lint
-    if: "!contains(github.event.head_commit.message, 'skip ci') && !startsWith(github.head_ref, 'changeset-release/')"
+    if: "!contains(github.event.head_commit.message, 'skip ci') && !startsWith(github.head_ref, 'changeset-release/') && github.head_ref != 'chore/backmerge-main'"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -55,7 +57,7 @@ jobs:
   # published dependency ranges while all of them stayed green.
   pack:
     name: Verify packages install as a consumer
-    if: "!contains(github.event.head_commit.message, 'skip ci') && !startsWith(github.head_ref, 'changeset-release/')"
+    if: "!contains(github.event.head_commit.message, 'skip ci') && !startsWith(github.head_ref, 'changeset-release/') && github.head_ref != 'chore/backmerge-main'"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -70,7 +72,7 @@ jobs:
 
   test:
     name: Test ${{ matrix.package }} on Node ${{ matrix.node-version }}
-    if: "!contains(github.event.head_commit.message, 'skip ci') && !startsWith(github.head_ref, 'changeset-release/')"
+    if: "!contains(github.event.head_commit.message, 'skip ci') && !startsWith(github.head_ref, 'changeset-release/') && github.head_ref != 'chore/backmerge-main'"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -96,7 +98,7 @@ jobs:
   # version is enough to catch it — the matrix above covers everything else.
   oldest-driver:
     name: Test gibbons-mongodb on the oldest supported mongodb driver
-    if: "!contains(github.event.head_commit.message, 'skip ci') && !startsWith(github.head_ref, 'changeset-release/')"
+    if: "!contains(github.event.head_commit.message, 'skip ci') && !startsWith(github.head_ref, 'changeset-release/') && github.head_ref != 'chore/backmerge-main'"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -114,7 +116,7 @@ jobs:
 
   bun:
     name: Run ${{ matrix.package }} on Bun
-    if: "!contains(github.event.head_commit.message, 'skip ci') && !startsWith(github.head_ref, 'changeset-release/')"
+    if: "!contains(github.event.head_commit.message, 'skip ci') && !startsWith(github.head_ref, 'changeset-release/') && github.head_ref != 'chore/backmerge-main'"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -144,7 +146,7 @@ jobs:
 
   deno:
     name: Import check ${{ matrix.package }} on Deno
-    if: "!contains(github.event.head_commit.message, 'skip ci') && !startsWith(github.head_ref, 'changeset-release/')"
+    if: "!contains(github.event.head_commit.message, 'skip ci') && !startsWith(github.head_ref, 'changeset-release/') && github.head_ref != 'chore/backmerge-main'"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

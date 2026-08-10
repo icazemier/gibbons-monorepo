@@ -12,6 +12,11 @@ permissions:
   contents: read
 
 jobs:
+  # One Node version here, not the whole matrix. Cross-version coverage belongs
+  # to CI, which ran every supported version on the pull request that produced
+  # this commit; repeating it on the merge tested nothing new and multiplied the
+  # runners for every release. The release commit is still tested — on the active
+  # LTS, the version every single-version pin in this repo already names.
   test:
     name: Test ${{ matrix.package }} on Node ${{ matrix.node-version }}
     runs-on: ubuntu-latest
@@ -22,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         package: [gibbons-mongodb, gibbons-postgresql]
-        node-version: [22.x, 24.x, 26.x]
+        node-version: [24.x]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
