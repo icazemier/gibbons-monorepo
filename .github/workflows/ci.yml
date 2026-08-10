@@ -134,7 +134,11 @@ jobs:
           cache: 'pnpm'
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          bun-version: latest
+          # Bounded to the major, like node-version and deno-version above. These
+          # jobs deliberately track the current release of each runtime — that is
+          # what a compatibility matrix is for — but `latest` is unbounded across
+          # majors, so a Bun 2.0 would silently change what is being tested.
+          bun-version: 1.x
       # pnpm is the single installer (catalog: protocol); Bun is the runtime under test.
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
