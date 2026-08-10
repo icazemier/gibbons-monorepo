@@ -41,9 +41,7 @@ export class ConfigLoader {
       : await explorer.search();
 
     if (!configResult?.config) {
-      throw new Error(
-        'Could not load config, execute `npx gibbons-mongodb init`'
-      );
+      throw new Error('Could not load config, execute `gibbons-mongodb init`');
     }
     const { config } = configResult;
     return config;

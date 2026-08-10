@@ -38,7 +38,7 @@ export class ConfigLoader {
 
     if (!configResult?.config) {
       throw new Error(
-        'Could not load config, execute `npx gibbons-postgresql init`'
+        'Could not load config, execute `gibbons-postgresql init`'
       );
     }
     const { config } = configResult;

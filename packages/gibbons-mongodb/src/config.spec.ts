@@ -10,8 +10,6 @@ describe('ConfigLoader', () => {
   it('Load faulty config', async () => {
     await expect(
       ConfigLoader.load('gibbons-mongodb-sampleeeee')
-    ).rejects.toThrow(
-      'Could not load config, execute `npx gibbons-mongodb init`'
-    );
+    ).rejects.toThrow('Could not load config, execute `gibbons-mongodb init`');
   });
 });
