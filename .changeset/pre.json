@@ -8,6 +8,7 @@
   "changesets": [
     "deprecate-mutation-concurrency",
     "mongodb-driver-7-support",
-    "mongodb-shared-session-race"
+    "mongodb-shared-session-race",
+    "postgresql-clean-jsr-tarball"
   ]
 }
