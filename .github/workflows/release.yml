@@ -166,7 +166,11 @@ jobs:
     name: Publish to JSR
     needs: release
     runs-on: ubuntu-latest
-    if: "needs.release.outputs.published == 'true'"
+    # A dispatch is also allowed through, because `jsr publish` skips a version
+    # it already has (see below) and so this job is safe to run at any time. That
+    # makes it the recovery lever when a publish fails after npm already went
+    # out: nothing else can push a missed version to JSR.
+    if: "needs.release.outputs.published == 'true' || github.event_name == 'workflow_dispatch'"
     permissions:
       contents: read
       id-token: write
@@ -190,8 +194,14 @@ jobs:
       # published, because it is generated from package.json and lint fails when
       # the two disagree. `jsr publish` skips a version it already has, so a
       # package that got no release this run simply does nothing here.
+      # One package at a time, which is not a preference. Both packages resolve
+      # `jsr` to the same hoisted install, and it downloads its Deno binary on
+      # first use into one shared path inside that install. Run in parallel, both
+      # download at once, one renames the .part file and the other dies on ENOENT
+      # — which is what broke the 3.1.0 promotion, the first release where two
+      # packages published in the same run.
       - name: Publish to JSR
-        run: pnpm -r run publish:jsr
+        run: pnpm -r --workspace-concurrency=1 run publish:jsr
 
   # A release cut from main is tagged on main's own commit, and nothing brings
   # that commit back. development then still believes the old version is current
