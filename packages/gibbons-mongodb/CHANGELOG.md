@@ -1,5 +1,11 @@
 # @icazemier/gibbons-mongodb
 
+## 3.1.1
+
+### Patch Changes
+
+- ad148a0: The "could not load config" error now names the CLI directly instead of prefixing it with `npx`. The package ships a `bin`, so anyone hitting this error already has the executable installed and no longer gets pointed at a command that resolves from the registry.
+
 ## 3.1.1-beta.0
 
 ### Patch Changes
