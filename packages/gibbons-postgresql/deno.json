@@ -1,6 +1,6 @@
 {
   "name": "@icazemier/gibbons-postgresql",
-  "version": "3.0.3-beta.0",
+  "version": "3.0.3",
   "license": "MIT",
   "exports": "./src/index.ts",
   "exclude": [
