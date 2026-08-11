@@ -15,11 +15,11 @@ on top of it.
 
 ```bash
 # 1. Your usual Prisma flow creates the tables.
-DATABASE_URL=postgresql://localhost:5432/myapp npx prisma migrate dev
+DATABASE_URL=postgresql://localhost:5432/myapp prisma migrate dev
 
 # 2. Seed the slot rows. --skip-schema tells the gibbons CLI to
 #    NOT run CREATE TABLE / CREATE EXTENSION (Prisma already did).
-npx gibbons-postgresql init \
+gibbons-postgresql init \
   --uri=postgresql://localhost:5432/myapp \
   --skip-schema
 ```

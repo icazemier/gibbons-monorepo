@@ -71,7 +71,7 @@ This gives you up to 1024 permissions (128 * 8) and 1024 groups.
 ### 2. Initialize the database
 
 ```bash
-npx gibbons-mongodb init --uri=mongodb://localhost:27017
+gibbons-mongodb init --uri=mongodb://localhost:27017
 ```
 
 Or programmatically:
@@ -204,10 +204,10 @@ pipeline(readable, myTransform, myWritable, (err) => {
 
 ```bash
 # Initialize database with pre-populated group and permission slots
-npx gibbons-mongodb init --uri=mongodb://localhost:27017
+gibbons-mongodb init --uri=mongodb://localhost:27017
 
 # Use a custom config file
-npx gibbons-mongodb init --uri=mongodb://localhost:27017 --config=./my-config.json
+gibbons-mongodb init --uri=mongodb://localhost:27017 --config=./my-config.json
 ```
 
 ## Configuration
