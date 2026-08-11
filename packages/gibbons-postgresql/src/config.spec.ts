@@ -12,7 +12,7 @@ describe('ConfigLoader', () => {
     await expect(
       ConfigLoader.load('gibbons-postgresql-sampleeeee')
     ).rejects.toThrow(
-      'Could not load config, execute `npx gibbons-postgresql init`'
+      'Could not load config, execute `gibbons-postgresql init`'
     );
   });
 

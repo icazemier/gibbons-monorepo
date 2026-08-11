@@ -1,0 +1,11 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@icazemier/gibbons-mongodb": "3.1.0",
+    "@icazemier/gibbons-postgresql": "3.0.2"
+  },
+  "changesets": [
+    "olive-pandas-shave"
+  ]
+}

@@ -4,7 +4,7 @@
 //
 // Workflow:
 //   1. Run `prisma migrate dev` so Prisma owns the schema.
-//   2. Run `npx gibbons-postgresql init --uri=... --skip-schema`
+//   2. Run `gibbons-postgresql init --uri=... --skip-schema`
 //      so the gibbons seeder only installs the helper SQL function
 //      and inserts the slot rows.
 //

@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "pnpm run typecheck && node tools/check-deno-import-map.ts && eslint .",
     "lint:fix": "node tools/check-deno-import-map.ts --fix && eslint . --fix",
+    "lint:commit": "commitlint --edit",
     "changeset": "changeset",
     "pre-mode": "node tools/apply-pre-mode.ts",
     "release:version": "pnpm run pre-mode && changeset version && pnpm install --lockfile-only && node tools/check-deno-import-map.ts --fix",

@@ -2,7 +2,7 @@
  * Example: Programmatically seed a custom PostgreSQL database with gibbons-postgresql.
  *
  * Usage:
- *   npx tsx examples/seed-custom-db.ts
+ *   node examples/seed-custom-db.ts
  *
  * Prerequisites:
  *   - A running PostgreSQL instance (default: postgresql://localhost:5432/postgres)

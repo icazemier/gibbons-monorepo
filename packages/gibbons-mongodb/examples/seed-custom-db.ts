@@ -2,7 +2,7 @@
  * Example: Programmatically seed a custom MongoDB database with gibbons-mongodb.
  *
  * Usage:
- *   npx tsx examples/seed-custom-db.ts
+ *   node examples/seed-custom-db.ts
  *
  * Prerequisites:
  *   - A running MongoDB instance (default: mongodb://localhost:27017)
