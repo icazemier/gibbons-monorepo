@@ -374,3 +374,9 @@ repo root after changing a range, and commit both files. `pnpm lint` fails when
 they disagree.
 
 This project uses [conventional commits](https://www.conventionalcommits.org/) for commit messages. User-facing changes also need a changeset (`pnpm changeset`). See [RELEASING.md](../../RELEASING.md) for details.
+
+## Security
+
+This package has no known security vulnerabilities in production dependencies. The package and its dev dependencies are regularly audited and patched as needed.
+
+For full vulnerability details, run `pnpm audit` in the repository root.
