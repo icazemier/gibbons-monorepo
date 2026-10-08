@@ -359,6 +359,17 @@ Multi-step methods (deallocate, subscribe, unsubscribe) auto-wrap in a transacti
 **What happens when all slots are used?**
 `allocatePermission` / `allocateGroup` throws. Use `expandPermissions` / `expandGroups` to increase capacity at runtime.
 
+**TypeScript Dynamic Import Limitation**
+
+When using dynamic imports (`await import("@icazemier/gibbons-postgresql")`), TypeScript assumes the import returns `{ default: T }` instead of recognizing named exports like `GibbonsPostgreSql`. This is a TypeScript limitation with ESM modules.
+
+**Workaround**: Use the CJS import path for dynamic imports:
+```typescript
+const { GibbonsPostgreSql } = await import("@icazemier/gibbons-postgresql/build/cjs");
+```
+
+This limitation only affects dynamic imports - static imports work correctly with both ESM and CJS.
+
 ## License
 
 MIT
