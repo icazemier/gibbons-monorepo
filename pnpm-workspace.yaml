@@ -51,6 +51,7 @@ overrides:
   js-yaml: ^4.3.1
   read-yaml-file: ^2.1.0
   linkify-it: ^5.0.2
+  markdown-it: ^14.3.2
   esbuild: ^0.28.1
 
 # Single source of truth for shared DEV dependency versions.
