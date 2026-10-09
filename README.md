@@ -79,6 +79,31 @@ publishes the `beta` channel and `main` publishes `latest`.
 
 See [RELEASING.md](RELEASING.md) for the full flow.
 
+## Security
+
+### Known vulnerabilities
+
+This monorepo and its packages are scanned for known vulnerabilities using `pnpm audit`. As a general policy:
+
+- **Production dependencies** are kept at patched versions or below vulnerable ranges.
+- **Dev dependencies** may have vulnerabilities that cannot be fixed without upgrading major ecosystem tools (e.g., @commitlint, @changesets).
+
+### Current status
+
+| Package | High | Moderate | Low |
+| --- | --- | --- | --- |
+| gibbons-mongodb | 0 | 0 | 0 |
+| gibbons-postgresql | 0 | 0 | 0 |
+| Dev tooling | 1 | 0 | 0 |
+
+### Known limitations
+
+The following vulnerability exists only in dev dependencies and cannot be fixed without ecosystem-wide upgrades:
+
+- **braces (GHSA-vfj7-8cjw-p6xm)**: Stack exhaustion via deeply nested patterns. Affects `@changesets/cli` → `micromatch` → `braces@3.0.3`. Advisory states "Patched versions: None". This only affects release tooling, not production code.
+
+Run `pnpm audit` for the full report.
+
 ## License
 
 MIT
