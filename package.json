@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@changesets/cli": "catalog:",
-    "@commitlint/cli": "catalog:",
+    "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "catalog:",
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",
