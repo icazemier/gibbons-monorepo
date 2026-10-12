@@ -311,10 +311,10 @@ importers:
         version: 0.14.3
       mongodb:
         specifier: ^7.5.0
-        version: 7.5.0
+        version: 7.7.0
       mongodb-memory-server:
         specifier: ^11.2.0
-        version: 11.2.0(supports-color@7.2.0)
+        version: 11.3.0(supports-color@7.2.0)
       noop-stream:
         specifier: 'catalog:'
         version: 1.0.0
@@ -341,7 +341,7 @@ importers:
         version: 10.0.0
       pg-cursor:
         specifier: ^2.21.0
-        version: 2.21.0(pg@8.22.0)
+        version: 2.21.0(pg@8.23.1)
       yargs:
         specifier: ^17.7.2
         version: 17.7.2
@@ -351,7 +351,7 @@ importers:
         version: 24.13.3
       '@types/pg':
         specifier: ^8.11.0
-        version: 8.20.3
+        version: 8.23.1
       '@types/pg-cursor':
         specifier: ^2.7.0
         version: 2.7.2
@@ -378,7 +378,7 @@ importers:
         version: 1.0.0
       pg:
         specifier: ^8.11.0
-        version: 8.22.0
+        version: 8.23.1
       rimraf:
         specifier: 'catalog:'
         version: 6.1.3
@@ -862,8 +862,8 @@ packages:
   '@manypkg/get-packages@1.1.3':
     resolution: {integrity: sha512-fo+QhuU3qE/2TQMQmbVMqaQ6EWbMhi4ABWP+O4AM1NqPBuy0OrApV5LO6BrrgnhtAHS2NH6RrVk9OL181tTi8A==}
 
-  '@mongodb-js/saslprep@1.4.11':
-    resolution: {integrity: sha512-o9rAHc0IpIjuPSxRutWpE1F62x7n+4mVS4rCNHkzhIUMQcc18bb6xEq5wd2NdN0WjepIyXIppRshYI2kQDOZVA==}
+  '@mongodb-js/saslprep@1.6.0':
+    resolution: {integrity: sha512-19jGXfpctLDJUELLUZGJ5BllcLT7rHdF+gTTaN2jzqu0bGkUhpdcYtgK2Vux+g3zuBAa0TM/W666QMIjYhYujw==}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -1039,8 +1039,8 @@ packages:
   '@types/pg-cursor@2.7.2':
     resolution: {integrity: sha512-m3xT8bVFCvx98LuzbvXyuCdT/Hjdd/v8ml4jL4K1QF70Y8clOfCFdgoaEB1FWdcSwcpoFYZTJQaMD9/GQ27efQ==}
 
-  '@types/pg@8.20.3':
-    resolution: {integrity: sha512-4Tvg+HO6+oQaAkpT8GTYoSExzpGGZz532GXgbbCElWJQeQdMozBWxEKNBhJJpHFjWXsMxqPbyypvj/89FWNoSQ==}
+  '@types/pg@8.23.1':
+    resolution: {integrity: sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==}
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
@@ -1233,6 +1233,14 @@ packages:
       react-native-b4a:
         optional: true
 
+  b4a@1.9.0:
+    resolution: {integrity: sha512-dpfcF9fDNR6++cthXR67iyhgqWy9CBouAvIWhIntzBG6cvK/cnIPiZQjBwi/ZqjjBEDGfoNDtmB0kTjroOJ3pQ==}
+    peerDependencies:
+      react-native-b4a: '*'
+    peerDependenciesMeta:
+      react-native-b4a:
+        optional: true
+
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
@@ -1245,9 +1253,9 @@ packages:
       bare-abort-controller:
         optional: true
 
-  bare-fs@4.7.2:
-    resolution: {integrity: sha512-aTvMFUWkBmjzKtEQMDGGDNF8bkfpD5N1b/FCwt7A3wrU4t1o/e/85Wzkluh6JlODCjqVESYCkQCdTXqZ9G7VFg==}
-    engines: {bare: '>=1.16.0'}
+  bare-fs@4.8.3:
+    resolution: {integrity: sha512-KQi9ShyPS/nOCtKpma7At8wbq4ORSNUmD67hsZrPcaWJcEmL8PHyS2xVWT308y8/LvHFOUTytTTDsD8dInx6bA==}
+    engines: {bare: '>=1.28.0'}
     peerDependencies:
       bare-buffer: '*'
     peerDependenciesMeta:
@@ -1290,8 +1298,8 @@ packages:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
     engines: {node: '>=8'}
 
-  bson@7.3.1:
-    resolution: {integrity: sha512-h/C0qe6857pQhcSJHLfsR1uYGj98Ge3wKAD3Ed9KqH3wcVh+BM4Jq4xISD7vs9OPuT07n+q3QQVjslJ286j6ag==}
+  bson@7.3.3:
+    resolution: {integrity: sha512-oz3LwE3qGEhTCSyhzQRLY3Bj1NLOsjFMf6tcmY5J8M+3R7EVcmoBfSHWvjUK3yXCLDUsGpIuB3aQL4nDZ1EV/g==}
     engines: {node: '>=20.19.0'}
 
   callsites@3.1.0:
@@ -1909,16 +1917,43 @@ packages:
     resolution: {integrity: sha512-ZoS07RoFqpKYQwAk59qmrx8+jJHNHU30UjlU96QktiGn1ltvDr+vCznLX5DiUBLEpMAHatHNWV1nM/74ul66kA==}
     engines: {node: '>=20.19.0'}
 
-  mongodb-memory-server-core@11.2.0:
-    resolution: {integrity: sha512-vOoDtn0JiLrHvZY81Rp/UtKXXK0rtJHZGZFVnccvJwYitPLNspO0Ty0grqFQOe7iAET8+GI4zAQcphg+R3vxQg==}
+  mongodb-memory-server-core@11.3.0:
+    resolution: {integrity: sha512-QBu/RsRpBfcNd5CrBDfCzqcaFPaYpivUzGYUy9YgVc3up78ff0gIHQVD9PLmBLOOxFX6BM9hU6YT0HocZH+s1g==}
     engines: {node: '>=20.19.0'}
 
-  mongodb-memory-server@11.2.0:
-    resolution: {integrity: sha512-506AD8qvClVx8Raw/WhAUUWBgIXPyi856iC01aa5vAzHmn6WOXC6ulvudkTF7oTMzJxkyA0A84VpD4BpyfqJ9w==}
+  mongodb-memory-server@11.3.0:
+    resolution: {integrity: sha512-8ZCDrraqKqmAikoeKuEq+16jeWdVKwjtEAuMxxeQctHiGSGYt17W9LmoRzV1Nwnz7owyxwDKMhow4IVkNYYRKw==}
     engines: {node: '>=20.19.0'}
 
   mongodb@7.5.0:
     resolution: {integrity: sha512-5FnrEDLnvp6ycUOGLNLLU33BfCx2qmp2mJjGPDwKLruYsVzXVSK5fsGpoDXvsXJwBfBsD7ebMRdawbDxC2814g==}
+    engines: {node: '>=20.19.0'}
+    peerDependencies:
+      '@aws-sdk/credential-providers': ^3.806.0
+      '@mongodb-js/zstd': ^7.0.0
+      gcp-metadata: ^7.0.1
+      kerberos: ^7.0.0
+      mongodb-client-encryption: ^7.2.0
+      snappy: ^7.3.2
+      socks: ^2.8.6
+    peerDependenciesMeta:
+      '@aws-sdk/credential-providers':
+        optional: true
+      '@mongodb-js/zstd':
+        optional: true
+      gcp-metadata:
+        optional: true
+      kerberos:
+        optional: true
+      mongodb-client-encryption:
+        optional: true
+      snappy:
+        optional: true
+      socks:
+        optional: true
+
+  mongodb@7.7.0:
+    resolution: {integrity: sha512-XG1xXEqyouAV8GCb3PuRaujofeXKpAJAPvXYWZgHl6Dz4QHSJ1nRLl0+GpqaLTwKvC0RFE9truOur34RNFY1nw==}
     engines: {node: '>=20.19.0'}
     peerDependencies:
       '@aws-sdk/credential-providers': ^3.806.0
@@ -2046,11 +2081,11 @@ packages:
   pend@1.2.0:
     resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
 
-  pg-cloudflare@1.4.0:
-    resolution: {integrity: sha512-Vo7z/6rrQYxpNRylp4Tlob2elzbh+N/MOQbxFVWCxS7oEx6jF53GTJFxK2WWpKuBRkmiin4Mt+xofFDjx09R0A==}
+  pg-cloudflare@1.4.1:
+    resolution: {integrity: sha512-6PQbsFWZcp9EmJEwy5cGQ2La+AMWpP46lgbb8X+U/XsHIUweYDNCpeuKck5RxL2MdVFi7krbbEi5nX4Zh7JhrQ==}
 
-  pg-connection-string@2.14.0:
-    resolution: {integrity: sha512-XwWDGcLRGCXAR8F/AM5bG7Q+A3Wm2s6QeEjlOKZLlH3UYcguiqCWKyWXVag5TLTIjR7oOJUY8kcADaZgWPyLeg==}
+  pg-connection-string@2.14.1:
+    resolution: {integrity: sha512-qR3kGNPBLpCNtz0evbKA0Y/MRFXwSSdT+pTJvYp/bXTcReZbvX1kzF0IyTc1QnxqF7AZbOeBhNL8R5mYQZV/MA==}
 
   pg-cursor@2.21.0:
     resolution: {integrity: sha512-IYvk/j+Suhtbo/C3uOf4JLsLK/gWxOTUOmYbDsbKnLaVJDq+KwhwK6ngpRfiCk8eDMS3AmGQABZCv0cREEzHQw==}
@@ -2069,12 +2104,15 @@ packages:
   pg-protocol@1.15.0:
     resolution: {integrity: sha512-cq9sECI5s0+uPUXjbz8ioyPJni6RzsRib0US67i5IoTZKw8fNeYlVE7u8F4dG7vEJJtc5wdD1K189lCCUwqWTQ==}
 
+  pg-protocol@1.16.1:
+    resolution: {integrity: sha512-p9VOFMiHB/ZbJATetbg+99PxssTVSQRnyuPSQ67mN1+1KBOjZaZ83ZQzltnxPhJwSsC3nwVjJ10DVJlerbFzLg==}
+
   pg-types@2.2.0:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
     engines: {node: '>=4'}
 
-  pg@8.22.0:
-    resolution: {integrity: sha512-8wih1vVIBMxoUM2oB4soJsD9tDnDpLv4OXBJ+EJzFsvycD+lfyIreC2gGHq78f8jbLLt+bvlPTFdFZfJkOuzAA==}
+  pg@8.23.1:
+    resolution: {integrity: sha512-aL96AHANtWjPLDOLqnhx+ngp9+UK7ETEU8VJrDCGvsSSi/mGLcWYsS6Herg7lmaBJe4uwrfqsa7gTEFaSizDoQ==}
     engines: {node: '>= 16.0.0'}
     peerDependencies:
       pg-native: '>=3.0.1'
@@ -2248,6 +2286,9 @@ packages:
   streamx@2.28.0:
     resolution: {integrity: sha512-1Yowhzjf0ivGMrTIkY9hav5TxobO9qIVqUE41fiCGMGgc3CLlf4MY+9AHmZqBWgDTue0fY9zWjYFVyf6Diuobw==}
 
+  streamx@2.28.1:
+    resolution: {integrity: sha512-zEzXb0s5Cds7tqMH6rhZ05lcJydCWiQPEwiNngVqzsxCc962vLY4Uw+mW7od8kDH258k2Uz/JrOkdIAAhSh9VA==}
+
   string-width@4.2.3:
     resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
     engines: {node: '>=8'}
@@ -2280,8 +2321,8 @@ packages:
     resolution: {integrity: sha512-eNRKgb3z66Yp3D2CixVujOUvXLFUTij/zVnV8KRyvFdQwpz7I5DS8UfRkTeLzb64u+dkzDSdelE24izu+zSSUg==}
     engines: {node: ^14.18.0 || >=16.0.0}
 
-  tar-stream@3.2.0:
-    resolution: {integrity: sha512-ojzvCvVaNp6aOTFmG7jaRD0meowIAuPc3cMMhSgKiVWws1GyHbGd/xvnyuRKcKlMpt3qvxx6r0hreCNITP9hIg==}
+  tar-stream@3.2.2:
+    resolution: {integrity: sha512-+8NeqHRjQWH9nYlwo2gamAMImZCVzI4UoEgDpWorBt9OEfppiZn+uSkskzQKPWIZyji/C8fpWO7u69G0DX0tbg==}
 
   teex@1.0.1:
     resolution: {integrity: sha512-eYE6iEI62Ni1H8oIa7KlDU6uQBtqr4Eajni3wX7rpfXD8ysFx8z0+dri+KWEPWpBsxXfxu58x/0jvTVT1ekOSg==}
@@ -3006,7 +3047,7 @@ snapshots:
       globby: 11.1.0
       read-yaml-file: 2.1.0
 
-  '@mongodb-js/saslprep@1.4.11':
+  '@mongodb-js/saslprep@1.6.0':
     dependencies:
       sparse-bitfield: 3.0.3
 
@@ -3131,9 +3172,9 @@ snapshots:
   '@types/pg-cursor@2.7.2':
     dependencies:
       '@types/node': 25.9.3
-      '@types/pg': 8.20.3
+      '@types/pg': 8.23.1
 
-  '@types/pg@8.20.3':
+  '@types/pg@8.23.1':
     dependencies:
       '@types/node': 24.13.3
       pg-protocol: 1.15.0
@@ -3365,11 +3406,13 @@ snapshots:
 
   b4a@1.8.1: {}
 
+  b4a@1.9.0: {}
+
   balanced-match@4.0.4: {}
 
   bare-events@2.9.1: {}
 
-  bare-fs@4.7.2:
+  bare-fs@4.8.3:
     dependencies:
       bare-events: 2.9.1
       bare-path: 3.0.1
@@ -3412,7 +3455,7 @@ snapshots:
     dependencies:
       fill-range: 7.1.1
 
-  bson@7.3.1: {}
+  bson@7.3.3: {}
 
   callsites@3.1.0: {}
 
@@ -3510,7 +3553,7 @@ snapshots:
   embedded-postgres@18.3.0-beta.17:
     dependencies:
       async-exit-hook: 2.0.1
-      pg: 8.22.0
+      pg: 8.23.1
     optionalDependencies:
       '@embedded-postgres/darwin-arm64': 18.3.0-beta.17
       '@embedded-postgres/darwin-x64': 18.3.0-beta.17
@@ -4005,7 +4048,7 @@ snapshots:
       '@types/whatwg-url': 13.0.0
       whatwg-url: 14.2.0
 
-  mongodb-memory-server-core@11.2.0(supports-color@7.2.0):
+  mongodb-memory-server-core@11.3.0(supports-color@7.2.0):
     dependencies:
       async-mutex: 0.5.0
       camelcase: 6.3.0
@@ -4015,8 +4058,8 @@ snapshots:
       https-proxy-agent: 7.0.6(supports-color@7.2.0)
       mongodb: 7.5.0
       new-find-package-json: 2.0.0(supports-color@7.2.0)
-      semver: 7.8.4
-      tar-stream: 3.2.0
+      semver: 7.8.5
+      tar-stream: 3.2.2
       tslib: 2.8.1
       yauzl: 3.4.0
     transitivePeerDependencies:
@@ -4032,9 +4075,9 @@ snapshots:
       - socks
       - supports-color
 
-  mongodb-memory-server@11.2.0(supports-color@7.2.0):
+  mongodb-memory-server@11.3.0(supports-color@7.2.0):
     dependencies:
-      mongodb-memory-server-core: 11.2.0(supports-color@7.2.0)
+      mongodb-memory-server-core: 11.3.0(supports-color@7.2.0)
       tslib: 2.8.1
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'
@@ -4051,8 +4094,14 @@ snapshots:
 
   mongodb@7.5.0:
     dependencies:
-      '@mongodb-js/saslprep': 1.4.11
-      bson: 7.3.1
+      '@mongodb-js/saslprep': 1.6.0
+      bson: 7.3.3
+      mongodb-connection-string-url: 7.0.2
+
+  mongodb@7.7.0:
+    dependencies:
+      '@mongodb-js/saslprep': 1.6.0
+      bson: 7.3.3
       mongodb-connection-string-url: 7.0.2
 
   mri@1.2.0: {}
@@ -4142,22 +4191,24 @@ snapshots:
 
   pend@1.2.0: {}
 
-  pg-cloudflare@1.4.0:
+  pg-cloudflare@1.4.1:
     optional: true
 
-  pg-connection-string@2.14.0: {}
+  pg-connection-string@2.14.1: {}
 
-  pg-cursor@2.21.0(pg@8.22.0):
+  pg-cursor@2.21.0(pg@8.23.1):
     dependencies:
-      pg: 8.22.0
+      pg: 8.23.1
 
   pg-int8@1.0.1: {}
 
-  pg-pool@3.14.0(pg@8.22.0):
+  pg-pool@3.14.0(pg@8.23.1):
     dependencies:
-      pg: 8.22.0
+      pg: 8.23.1
 
   pg-protocol@1.15.0: {}
+
+  pg-protocol@1.16.1: {}
 
   pg-types@2.2.0:
     dependencies:
@@ -4167,15 +4218,15 @@ snapshots:
       postgres-date: 1.0.7
       postgres-interval: 1.2.0
 
-  pg@8.22.0:
+  pg@8.23.1:
     dependencies:
-      pg-connection-string: 2.14.0
-      pg-pool: 3.14.0(pg@8.22.0)
-      pg-protocol: 1.15.0
+      pg-connection-string: 2.14.1
+      pg-pool: 3.14.0(pg@8.23.1)
+      pg-protocol: 1.16.1
       pg-types: 2.2.0
       pgpass: 1.0.5
     optionalDependencies:
-      pg-cloudflare: 1.4.0
+      pg-cloudflare: 1.4.1
 
   pgpass@1.0.5:
     dependencies:
@@ -4316,6 +4367,15 @@ snapshots:
       - bare-abort-controller
       - react-native-b4a
 
+  streamx@2.28.1:
+    dependencies:
+      events-universal: 1.0.1
+      fast-fifo: 1.3.2
+      text-decoder: 1.2.7
+    transitivePeerDependencies:
+      - bare-abort-controller
+      - react-native-b4a
+
   string-width@4.2.3:
     dependencies:
       emoji-regex: 8.0.0
@@ -4351,12 +4411,12 @@ snapshots:
     dependencies:
       '@pkgr/core': 0.3.6
 
-  tar-stream@3.2.0:
+  tar-stream@3.2.2:
     dependencies:
-      b4a: 1.8.1
-      bare-fs: 4.7.2
+      b4a: 1.9.0
+      bare-fs: 4.8.3
       fast-fifo: 1.3.2
-      streamx: 2.28.0
+      streamx: 2.28.1
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
