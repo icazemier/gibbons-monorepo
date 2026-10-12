@@ -38,9 +38,14 @@ export interface RegistryTarget {
 }
 
 // A publish is visible within seconds, but not always instantly, so a miss is
-// retried before it is called a failure.
-const RETRIES = 5;
-const RETRY_DELAY_MS = 4000;
+// retried before it is called a failure. npm's registry can take up to a minute
+// to serve a freshly published version (CDN propagation), which is longer than
+// the publish-to-verify gap in the release workflow — the JSR job verifies both
+// registries right after the Release job publishes. The window below outlasts
+// that worst case, so a slow-but-healthy npm publish is not mistaken for a
+// missing one.
+const RETRIES = 12;
+const RETRY_DELAY_MS = 5000;
 
 const isServed = async (
   target: RegistryTarget,
