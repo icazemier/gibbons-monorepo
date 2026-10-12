@@ -1,5 +1,11 @@
 # @icazemier/gibbons-postgresql
 
+## 3.0.4-beta.0
+
+### Patch Changes
+
+- 3fcdd87: Improve ESM type resolution by adding conditional `types` subpaths to the `exports` map, so TypeScript resolves the correct declaration file for both `import` and `require` entry points. Also document the dynamic-import TypeScript limitation in the READMEs.
+
 ## 3.0.3
 
 ### Patch Changes
