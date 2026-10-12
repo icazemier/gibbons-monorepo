@@ -6,6 +6,7 @@
     "@icazemier/gibbons-postgresql": "3.0.3"
   },
   "changesets": [
-    "esm-types-resolution"
+    "esm-types-resolution",
+    "verify-published-retry-window"
   ]
 }
