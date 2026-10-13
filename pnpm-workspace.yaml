@@ -85,7 +85,7 @@ catalog:
   jsr: 0.14.3
   # Pinned exactly for the same reason as jsr: it decides what reaches the
   # registry, which is not a caret's call.
-  "@changesets/cli": 2.31.1
+  "@changesets/cli": 3.0.3
   "@commitlint/cli": ^21.2.3
   "@commitlint/config-conventional": ^21.2.3
   "@eslint/js": ^10.0.0
