@@ -38,13 +38,15 @@ export interface RegistryTarget {
 }
 
 // A publish is visible within seconds, but not always instantly, so a miss is
-// retried before it is called a failure. npm's registry can take up to a minute
-// to serve a freshly published version (CDN propagation), which is longer than
-// the publish-to-verify gap in the release workflow — the JSR job verifies both
-// registries right after the Release job publishes. The window below outlasts
-// that worst case, so a slow-but-healthy npm publish is not mistaken for a
-// missing one.
-const RETRIES = 12;
+// retried before it is called a failure. npm's registry can take well over a
+// minute to serve a freshly published version (CDN propagation). The 3.1.2-beta.2
+// release measured this: the first package checked (gibbons-mongodb) still was
+// not served on npm after ~57s of retries, and the whole check had to be
+// re-run. The window below outlasts that measured worst case, so a slow-but-
+// healthy npm publish is not mistaken for a missing one. A miss only ever costs
+// the retry budget, so the cost of a generous window is paid only by the slowest
+// package; the rest return as soon as their version is served.
+const RETRIES = 24;
 const RETRY_DELAY_MS = 5000;
 
 const isServed = async (
