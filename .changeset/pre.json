@@ -7,6 +7,7 @@
   },
   "changesets": [
     "esm-types-resolution",
+    "promote-security-fixes-to-latest",
     "promote-security-fixes",
     "verify-published-retry-window",
     "widen-verify-window-further"
