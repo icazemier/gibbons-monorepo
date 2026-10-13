@@ -82,6 +82,51 @@ For each Dependabot PR:
 5. **Ignore `mongodb` major PRs** (by design — see hard rules) unless they're
    intentional tracked work.
 
+## The release verify flake (read before any release-adjacent work)
+
+`verify-published` runs on every release and asserts both registries serve every
+package's declared version. It has failed three times — not because a publish
+was lost, but because **npm's CDN propagation lag for `gibbons-mongodb` is the
+longest of anything in the repo**, and mongodb is always checked first (`packages/`
+sorts alphabetically, npm before JSR). Every failure so far was the same shape:
+npm still not serving mongodb's new version after the whole retry window, while
+the version was served moments later.
+
+| release | window | result |
+|---|---|---|
+| `3.1.0` | no retries | ❌ npm served it, JSR was stale |
+| `3.1.2-beta.1` | ~20s (5×4s) | ❌ propagation > 20s |
+| `3.1.2-beta.2` | ~60s (12×5s) | ❌ mongodb npm still not served after 57s |
+| current | **~120s (24×5s)** | should outlast measured >57s worst case |
+
+Lessons:
+
+- **A `-beta.N`/release failing `Verify both registries serve every version` is
+  usually a propagation flake, not a lost publish.** Before assuming a real
+  failure, check whether npm actually serves the version now (it almost always
+  does). If it does, the fix is to widen the window — see `RETRIES`/`RETRY_DELAY_MS`
+  in `tools/verify-published.ts` — and rerun, not to republish.
+- `gibbons-mongodb` is the slowest npm publisher and is verified first, so it
+  pays the whole retry budget. `gibbons-postgresql` propagates fast. Never shrink
+  the window below the measured worst case for mongodb.
+- The fix lives in the retry constants, **not** in publish logic — publishing is
+  idempotent (both registries skip an existing version), so a green publish with
+  a red verify means propagation, never a need to republish.
+
+## Promotion gotcha: a `development → main` merge needs a changeset to ship
+
+`development` publishes `-beta.N`; `main` publishes `latest`. A plain
+`development → main` merge with **no pending changesets publishes nothing** —
+the release workflow exits pre-mode, `changeset version` finds nothing to
+consume, and `changeset publish` skips versions that already exist on npm (the
+beta versions), so `latest` stays stale.
+
+To promote already-released beta fixes to `latest`, add a **patch changeset** for
+the affected packages on `development`, merge it (produces the next `-beta.N`),
+then merge `development → main`. The promote merge consumes the changeset after
+exiting pre-mode, bumping `X-beta.N → X` and shipping the stable version to
+`latest`.
+
 ## Gotchas
 
 - Dev-dep catalog drift is **not lint-flagged** (`catalog-ranges` excludes

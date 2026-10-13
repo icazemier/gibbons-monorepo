@@ -71,3 +71,9 @@ and `src/index.ts`.
 - **User-facing changes need a changeset**: `pnpm changeset`, bump by consumer
   impact (patch = bugfix, minor = new capability, major = breaking).
 - **Conventional commits** for commit messages.
+- **Release verify flake**: `gibbons-mongodb` is the slowest npm publisher in the
+  repo and the first package checked by `verify-published`. A release failing
+  `Verify both registries serve every version` on this package is usually npm
+  CDN propagation lag, not a lost publish — check whether npm serves the version
+  now; if it does, widen `RETRIES`/`RETRY_DELAY_MS` in `tools/verify-published.ts`
+  and rerun. The current window (~120s) is sized to mongodb's measured >57s lag.
