@@ -77,7 +77,7 @@ catalog:
   # named here, and `pnpm lint:fix` writes it. Bump once, here.
   "@icazemier/gibbons": ^6.0.10
   cosmiconfig: ^10.0.0
-  yargs: ^17.7.2
+  yargs: ^18.2.0
   # shared dev tooling
   # jsr is pinned exactly, not ranged: it publishes, so which build runs is not
   # something a caret should decide. Declared here rather than fetched by npx so
