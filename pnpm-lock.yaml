@@ -189,8 +189,8 @@ catalogs:
       specifier: ^10.1.0
       version: 10.1.0
     dotenv:
-      specifier: ^17.4.2
-      version: 17.4.2
+      specifier: ^18.0.7
+      version: 18.0.7
     eslint:
       specifier: ^10.8.0
       version: 10.8.0
@@ -305,7 +305,7 @@ importers:
         version: 10.1.0
       dotenv:
         specifier: 'catalog:'
-        version: 17.4.2
+        version: 18.0.7
       jsr:
         specifier: 'catalog:'
         version: 0.14.3
@@ -366,7 +366,7 @@ importers:
         version: 10.1.0
       dotenv:
         specifier: 'catalog:'
-        version: 17.4.2
+        version: 18.0.7
       embedded-postgres:
         specifier: 18.3.0-beta.17
         version: 18.3.0-beta.17
@@ -1405,9 +1405,10 @@ packages:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
     engines: {node: '>=8'}
 
-  dotenv@17.4.2:
-    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
+  dotenv@18.0.7:
+    resolution: {integrity: sha512-QEvMEF8ca3GNZJJnAbOgxpj5ULhBvnMcURp+XKrtvqFNPgjBvYoswQ0Jl2cO7JzCjxZjJhr9ZuIEhlrRxMft/Q==}
     engines: {node: '>=12'}
+    hasBin: true
 
   embedded-postgres@18.3.0-beta.17:
     resolution: {integrity: sha512-1biFWyuPVtAV5S9RBgcr4PGuAdNL9WhnNZVQ5Arp3gsB24Ci9X9s/8Z7RFYFSc6tJWcj9kzF55YcDAcr3jLUbQ==}
@@ -3548,7 +3549,7 @@ snapshots:
     dependencies:
       path-type: 4.0.0
 
-  dotenv@17.4.2: {}
+  dotenv@18.0.7: {}
 
   embedded-postgres@18.3.0-beta.17:
     dependencies:
