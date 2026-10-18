@@ -1,7 +1,7 @@
 {
   "name": "@icazemier/gibbons-postgresql",
   "private": false,
-  "version": "3.0.3",
+  "version": "4.0.0-beta.5",
   "type": "module",
   "description": "Gibbons is a Node.js module which helps in managing user groups and user permissions with `bitwise` efficiency.",
   "contributors": [
@@ -29,6 +29,10 @@
   "module": "./build/esm/index.js",
   "exports": {
     ".": {
+      "types": {
+        "import": "./build/esm/index.d.ts",
+        "require": "./build/cjs/index.d.ts"
+      },
       "import": "./build/esm/index.js",
       "require": "./build/cjs/index.js"
     }
@@ -74,8 +78,8 @@
   "dependencies": {
     "@icazemier/gibbons": "^6.0.10",
     "cosmiconfig": "^10.0.0",
-    "pg-cursor": "^2.21.0",
-    "yargs": "^17.7.2"
+    "pg-cursor": "^2.22.1",
+    "yargs": "^18.2.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",
