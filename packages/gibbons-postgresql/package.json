@@ -89,7 +89,7 @@
     "@vitest/coverage-v8": "catalog:",
     "cross-env": "catalog:",
     "dotenv": "catalog:",
-    "embedded-postgres": "18.3.0-beta.17",
+    "embedded-postgres": "^19.0.0-beta.20",
     "jsr": "catalog:",
     "noop-stream": "catalog:",
     "pg": "^8.11.0",
