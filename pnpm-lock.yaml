@@ -283,7 +283,7 @@ importers:
     dependencies:
       '@icazemier/gibbons':
         specifier: ^6.0.10
-        version: 6.0.10
+        version: 6.0.11
       cosmiconfig:
         specifier: ^10.0.0
         version: 10.0.0
@@ -335,7 +335,7 @@ importers:
     dependencies:
       '@icazemier/gibbons':
         specifier: ^6.0.10
-        version: 6.0.10
+        version: 6.0.11
       cosmiconfig:
         specifier: ^10.0.0
         version: 10.0.0
@@ -842,8 +842,8 @@ packages:
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
-  '@icazemier/gibbons@6.0.10':
-    resolution: {integrity: sha512-moFzv87x/x78RnOdmcEqzYmMNxs8GY6iS/weGUszVjWT/qSHSTcW7UvwN36NlsFl0uViC9DWGQctz2905dXTZg==}
+  '@icazemier/gibbons@6.0.11':
+    resolution: {integrity: sha512-SQ8ohpg6HJ4PEpgICz/tf7oFj8/MMsZjQF77X/o0chzvZoreaMjUKLDIXpotEtI0iWnO9hgSs/Lb8iYTp8QivA==}
     engines: {node: '>=20.0.0'}
     os: [darwin, linux, win32]
 
@@ -2745,7 +2745,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.4.3': {}
 
-  '@icazemier/gibbons@6.0.10': {}
+  '@icazemier/gibbons@6.0.11': {}
 
   '@jridgewell/resolve-uri@3.1.2': {}
 
