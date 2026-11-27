@@ -80,7 +80,19 @@ const config = tsEslint.config(
       ],
     },
   },
-  eslintPluginPrettierRecommended
+  eslintPluginPrettierRecommended,
+  {
+    files: [
+      '**/*.spec.ts',
+      '**/*.test.ts',
+      '**/__tests__/**',
+      '**/test/**',
+      '**/tests/**',
+    ],
+    rules: {
+      '@typescript-eslint/no-meaningless-void-operator': 'off',
+    },
+  }
 );
 
 export default config;
